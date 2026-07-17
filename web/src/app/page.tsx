@@ -43,7 +43,7 @@ export default function Landing() {
             </p>
             <div className="flex flex-wrap gap-4">
               <Button className="text-lg px-6 py-3" onClick={() => router.push(signedIn ? '/create-game' : '/register')}>
-                🎮 Create a Game
+                🎮 Create a Game Room
               </Button>
               <Button variant="secondary" className="text-lg px-6 py-3" onClick={() => router.push('/login')}>
                 Teacher Login
