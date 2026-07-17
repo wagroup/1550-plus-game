@@ -1,0 +1,18 @@
+{
+  "name": "classbuzz",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ClassBuzz - Real-time classroom team quiz and buzzer web application",
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "build": "npm run build --prefix client",
+    "start": "node server/src/index.js",
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "classbuzz": "file:"
+  }
+}
