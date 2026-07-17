@@ -1,0 +1,8 @@
+web/.env
+web/.env.*
+!web/.env.example
+web/.next
+web/node_modules
+web/.vercel
+.vercel
+node_modules
