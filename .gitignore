@@ -1,5 +1,8 @@
 node_modules/
-dist/
-server/data/
 *.log
 .env
+.env.local
+.env*.local
+web/.next/
+web/node_modules/
+.next/
