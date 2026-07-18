@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import RequireAuth from '@/components/RequireAuth';
 import TeacherLayout from '@/components/TeacherLayout';
 import { Button, Card, ErrorBanner } from '@/components/ui';
+import { Icon, IconLabel, TeamIconLabel } from '@/components/icons';
 import { api } from '@/lib/client-api';
 import type { GameReport, TeamId } from '@/lib/types';
 
@@ -27,7 +28,7 @@ function ReportDetail() {
   }, [id]);
 
   if (error) return <TeacherLayout title="Report"><ErrorBanner message={error} /></TeacherLayout>;
-  if (!report) return <TeacherLayout title="Report"><p className="text-slate-500">Loading…</p></TeacherLayout>;
+  if (!report) return <TeacherLayout title="Report"><p className="text-text-secondary">Loading…</p></TeacherLayout>;
 
   const winner = report.winner ? report.teams[report.winner] : null;
 
@@ -69,21 +70,29 @@ function ReportDetail() {
   return (
     <TeacherLayout title={report.title}>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <p className="text-slate-500 font-medium">
+        <p className="text-text-secondary font-medium">
           {report.endedAt ? new Date(report.endedAt).toLocaleString() : ''} ·{' '}
           {report.durationMs ? `${Math.round(report.durationMs / 60000)} min · ` : ''}
           {report.totalQuestions} questions · Room {report.roomCode}
         </p>
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={exportCsv}>⬇ Export CSV</Button>
-          <Button variant="secondary" onClick={() => window.print()}>🖨 Print / PDF</Button>
+          <Button variant="secondary" showArrow={false} onClick={exportCsv}>
+            <IconLabel icon="download">Export CSV</IconLabel>
+          </Button>
+          <Button variant="secondary" showArrow={false} onClick={() => window.print()}>
+            <IconLabel icon="print">Print / PDF</IconLabel>
+          </Button>
         </div>
       </div>
 
-      <Card className="p-6 mb-6 text-center">
-        <p className="text-sm font-bold uppercase tracking-wide text-slate-400 mb-2">Result</p>
-        <p className="text-3xl font-black">
-          {report.isTie ? '🤝 Tie game' : `🏆 ${winner?.name} wins!`}
+      <Card variant="light" className="p-6 mb-6 text-center">
+        <p className="text-sm font-bold uppercase tracking-wide text-text-secondary mb-2">Result</p>
+        <p className="font-display inline-flex items-center justify-center gap-2 text-3xl">
+          {report.isTie ? (
+            <><Icon name="handshake" size={32} /> Tie game</>
+          ) : (
+            <><Icon name="award" size={32} /> {winner?.name} wins!</>
+          )}
         </p>
       </Card>
 
@@ -93,17 +102,19 @@ function ReportDetail() {
           return (
             <Card key={teamId} className="p-5 border-t-8" style={{ borderTopColor: team.color }}>
               <div className="flex items-center justify-between mb-4 pb-3 border-b-4" style={{ borderColor: team.color }}>
-                <p className="font-extrabold text-lg" style={{ color: team.color }}>{team.icon} {team.name}</p>
-                <p className="text-4xl font-black" style={{ color: team.color }}>{team.score}</p>
+                <TeamIconLabel icon={team.icon} size={22} color={team.color} className="font-display text-lg">
+                  {team.name}
+                </TeamIconLabel>
+                <p className="font-display text-4xl" style={{ color: team.color }}>{team.score}</p>
               </div>
               <dl className="grid grid-cols-2 gap-3 text-sm">
-                <div><dt className="text-slate-500">Correct answers</dt><dd className="font-bold text-lg text-correct">{team.correct}</dd></div>
-                <div><dt className="text-slate-500">Incorrect answers</dt><dd className="font-bold text-lg text-incorrect">{team.incorrect}</dd></div>
-                <div><dt className="text-slate-500">Buzzer wins</dt><dd className="font-bold text-lg">{team.buzzerWins}</dd></div>
-                <div><dt className="text-slate-500">Avg buzz time</dt>
+                <div><dt className="text-text-secondary">Correct answers</dt><dd className="font-bold text-lg text-correct">{team.correct}</dd></div>
+                <div><dt className="text-text-secondary">Incorrect answers</dt><dd className="font-bold text-lg text-incorrect">{team.incorrect}</dd></div>
+                <div><dt className="text-text-secondary">Buzzer wins</dt><dd className="font-bold text-lg">{team.buzzerWins}</dd></div>
+                <div><dt className="text-text-secondary">Avg buzz time</dt>
                   <dd className="font-bold text-lg">{team.avgResponseMs != null ? `${(team.avgResponseMs / 1000).toFixed(2)}s` : '—'}</dd></div>
               </dl>
-              <p className="text-sm text-slate-500 mt-3">
+              <p className="text-sm text-text-secondary mt-3">
                 <span className="font-semibold">Members:</span> {team.members.join(', ') || '—'}
               </p>
             </Card>
@@ -111,11 +122,11 @@ function ReportDetail() {
         })}
       </div>
 
-      <h2 className="text-xl font-bold mb-4">Question-by-question results</h2>
-      <Card className="overflow-x-auto mb-8">
+      <h2 className="font-display text-xl mb-4">Question-by-question results</h2>
+      <Card variant="light" className="overflow-x-auto mb-8">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-slate-500 border-b border-slate-200">
+            <tr className="text-left text-text-secondary border-b border-primary/15">
               <th className="px-4 py-3">#</th>
               <th className="px-4 py-3">Question</th>
               <th className="px-4 py-3">Buzzed first</th>
@@ -130,19 +141,35 @@ function ReportDetail() {
                 <td className="px-4 py-3 max-w-md">{qr.questionText}</td>
                 <td className="px-4 py-3">
                   {qr.buzzTeamId ? (
-                    <span className="font-bold" style={{ color: report.teams[qr.buzzTeamId].color }}>
-                      {report.teams[qr.buzzTeamId].icon} {report.teams[qr.buzzTeamId].name}
-                    </span>
+                    <TeamIconLabel icon={report.teams[qr.buzzTeamId].icon} size={16} color={report.teams[qr.buzzTeamId].color} className="font-bold">
+                      {report.teams[qr.buzzTeamId].name}
+                    </TeamIconLabel>
                   ) : '—'}
                 </td>
                 <td className="px-4 py-3 tabular-nums">
                   {qr.buzzResponseMs != null ? `${(qr.buzzResponseMs / 1000).toFixed(2)}s` : '—'}
                 </td>
                 <td className="px-4 py-3">
-                  {qr.result === 'correct' && <span className="font-bold text-correct">✓ Correct{qr.resultTeamId ? ` (${report.teams[qr.resultTeamId].name})` : ''}</span>}
-                  {qr.result === 'incorrect' && <span className="font-bold text-incorrect">✗ Incorrect</span>}
-                  {qr.result === 'skipped' && <span className="font-bold text-waiting">⏭ Skipped</span>}
-                  {qr.result === 'revealed' && <span className="font-bold text-waiting">👁 Revealed</span>}
+                  {qr.result === 'correct' && (
+                    <span className="inline-flex items-center gap-1 font-bold text-correct">
+                      <Icon name="check" size={16} /> Correct{qr.resultTeamId ? ` (${report.teams[qr.resultTeamId].name})` : ''}
+                    </span>
+                  )}
+                  {qr.result === 'incorrect' && (
+                    <span className="inline-flex items-center gap-1 font-bold text-incorrect">
+                      <Icon name="cancel" size={16} /> Incorrect
+                    </span>
+                  )}
+                  {qr.result === 'skipped' && (
+                    <span className="inline-flex items-center gap-1 font-bold text-waiting">
+                      <Icon name="skip" size={16} /> Skipped
+                    </span>
+                  )}
+                  {qr.result === 'revealed' && (
+                    <span className="inline-flex items-center gap-1 font-bold text-waiting">
+                      <Icon name="question" size={16} /> Revealed
+                    </span>
+                  )}
                   {!qr.result && '—'}
                 </td>
               </tr>
@@ -151,20 +178,20 @@ function ReportDetail() {
         </table>
       </Card>
 
-      <h2 className="text-xl font-bold mb-4">Score history</h2>
-      <Card className="p-5">
+      <h2 className="font-display text-xl mb-4">Score history</h2>
+      <Card variant="light" className="p-5">
         {report.scoreHistory.length === 0 ? (
-          <p className="text-slate-500 text-sm">No score changes recorded.</p>
+          <p className="text-text-secondary text-sm">No score changes recorded.</p>
         ) : (
           <div className="space-y-2 text-sm">
             {report.scoreHistory.map((event) => (
               <p key={event.id}>
-                <span className="text-slate-400 tabular-nums mr-3">{new Date(event.at).toLocaleTimeString()}</span>
+                <span className="text-text-secondary tabular-nums mr-3">{new Date(event.at).toLocaleTimeString()}</span>
                 <span className="font-bold" style={{ color: report.teams[event.teamId].color }}>{event.teamName}</span>
                 <span className={`font-black mx-2 ${event.change > 0 ? 'text-correct' : 'text-incorrect'}`}>
                   {event.change > 0 ? '+' : ''}{event.change}
                 </span>
-                <span className="text-slate-600">{event.reason}</span>
+                <span className="text-text-body-dark">{event.reason}</span>
               </p>
             ))}
           </div>

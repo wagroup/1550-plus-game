@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import RequireAuth from '@/components/RequireAuth';
 import TeacherLayout from '@/components/TeacherLayout';
-import { Button, Card, Field, inputClass, ErrorBanner, ConfirmDialog } from '@/components/ui';
+import { Button, Card, Field, inputClassLight, ErrorBanner, ConfirmDialog } from '@/components/ui';
+import { Icon } from '@/components/icons';
 import { api } from '@/lib/client-api';
 import type { Question, QuestionSet } from '@/lib/types';
 
@@ -59,7 +60,7 @@ function QuestionSets() {
       <ErrorBanner message={error} />
       <div className="mb-6">
         <Button
-          className="text-lg px-6 py-3"
+          showArrow={false}
           onClick={() =>
             setEditing({
               id: '',
@@ -73,27 +74,27 @@ function QuestionSets() {
             })
           }
         >
-          ➕ New Question Set
+          <Icon name="plus" size={30} /> <span>New Question Set</span>
         </Button>
       </div>
 
       {sets.length === 0 ? (
-        <Card className="p-10 text-center text-slate-500">
+        <Card variant="light" className="p-10 text-center text-text-secondary">
           <p className="text-4xl mb-3">📝</p>
-          <p className="font-semibold">No question sets yet</p>
+          <p className="font-ui font-semibold text-text-body-dark">No question sets yet</p>
           <p className="text-sm">Create one to use in your games.</p>
         </Card>
       ) : (
         <div className="grid md:grid-cols-2 gap-4">
           {sets.map((set) => (
-            <Card key={set.id} className="p-5">
+            <Card variant="light" key={set.id} className="p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="font-bold text-lg">{set.title}</h3>
-                  <p className="text-sm text-slate-500">
+                  <h3 className="font-display text-lg text-text-body-dark">{set.title}</h3>
+                  <p className="text-sm text-text-secondary">
                     {set.subject ? `${set.subject} · ` : ''}{set.questions.length} question{set.questions.length !== 1 ? 's' : ''}
                   </p>
-                  {set.description && <p className="text-sm text-slate-600 mt-2">{set.description}</p>}
+                  {set.description && <p className="text-sm text-text-body-dark mt-2">{set.description}</p>}
                 </div>
               </div>
               <div className="flex gap-2 mt-4">
@@ -178,22 +179,22 @@ function SetEditor({
         <ErrorBanner message={error} />
         <div className="grid md:grid-cols-2 gap-4">
           <Field label="Title">
-            <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Science Quiz — Chapter 4" />
+            <input className={inputClassLight} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Science Quiz — Chapter 4" />
           </Field>
           <Field label="Subject (optional)">
-            <input className={inputClass} value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Science" />
+            <input className={inputClassLight} value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Science" />
           </Field>
         </div>
         <Field label="Description (optional)">
-          <input className={inputClass} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Solar system basics" />
+          <input className={inputClassLight} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Solar system basics" />
         </Field>
       </div>
 
       <div className="space-y-5">
         {questions.map((q, i) => (
-          <Card key={q.id} className="p-5">
+          <Card key={q.id} variant="light" className="p-5">
             <div className="flex items-center justify-between mb-4">
-              <span className="font-bold text-slate-500">Question {i + 1}</span>
+              <span className="font-bold text-text-secondary">Question {i + 1}</span>
               <div className="flex gap-1">
                 <Button variant="ghost" onClick={() => move(i, -1)} disabled={i === 0} title="Move up">↑</Button>
                 <Button variant="ghost" onClick={() => move(i, 1)} disabled={i === questions.length - 1} title="Move down">↓</Button>
@@ -203,12 +204,12 @@ function SetEditor({
             </div>
             <div className="space-y-4">
               <Field label="Question text">
-                <textarea className={`${inputClass} min-h-20`} value={q.text}
+                <textarea className={`${inputClassLight} min-h-20`} value={q.text}
                   onChange={(e) => update(i, { text: e.target.value })} placeholder="What is the closest star to Earth?" />
               </Field>
               <div className="grid md:grid-cols-3 gap-4">
                 <Field label="Type">
-                  <select className={inputClass} value={q.type}
+                  <select className={inputClassLight} value={q.type}
                     onChange={(e) => update(i, { type: e.target.value as Question['type'] })}>
                     <option value="open">Open-ended</option>
                     <option value="multiple_choice">Multiple choice</option>
@@ -216,19 +217,19 @@ function SetEditor({
                   </select>
                 </Field>
                 <Field label="Points (blank = game default)">
-                  <input className={inputClass} type="number" min={1} value={q.points ?? ''}
+                  <input className={inputClassLight} type="number" min={1} value={q.points ?? ''}
                     onChange={(e) => update(i, { points: e.target.value ? +e.target.value : null })} placeholder="1" />
                 </Field>
                 <Field label="Correct answer">
                   {q.type === 'true_false' ? (
-                    <select className={inputClass} value={q.correctAnswer}
+                    <select className={inputClassLight} value={q.correctAnswer}
                       onChange={(e) => update(i, { correctAnswer: e.target.value })}>
                       <option value="">Select…</option>
                       <option value="True">True</option>
                       <option value="False">False</option>
                     </select>
                   ) : (
-                    <input className={inputClass} value={q.correctAnswer}
+                    <input className={inputClassLight} value={q.correctAnswer}
                       onChange={(e) => update(i, { correctAnswer: e.target.value })} placeholder="The Sun" />
                   )}
                 </Field>
@@ -237,7 +238,7 @@ function SetEditor({
                 <Field label="Answer options">
                   <div className="grid md:grid-cols-2 gap-2">
                     {q.options.map((opt, oi) => (
-                      <input key={oi} className={inputClass} value={opt}
+                      <input key={oi} className={inputClassLight} value={opt}
                         onChange={(e) => update(i, { options: q.options.map((o, oj) => (oj === oi ? e.target.value : o)) })}
                         placeholder={`Option ${String.fromCharCode(65 + oi)}`} />
                     ))}
@@ -245,7 +246,7 @@ function SetEditor({
                 </Field>
               )}
               <Field label="Explanation (optional — shown after the answer is revealed)">
-                <input className={inputClass} value={q.explanation}
+                <input className={inputClassLight} value={q.explanation}
                   onChange={(e) => update(i, { explanation: e.target.value })} placeholder="The Sun is a star about 150 million km away." />
               </Field>
             </div>

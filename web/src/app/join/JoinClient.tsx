@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Logo, Button, Card, Field, inputClass, ErrorBanner } from '@/components/ui';
+import { Button, Card, Field, inputClass, ErrorBanner, AuthShell } from '@/components/ui';
+import { TeamIcon } from '@/components/icons';
 import { getStudentSession, saveStudentSession } from '@/lib/client-api';
 import { studentJoin } from '@/lib/use-room';
 import type { TeamId } from '@/lib/types';
@@ -31,7 +32,6 @@ export default function JoinClient({ initialCode }: { initialCode?: string }) {
       const res = await fetch(`/api/rooms/${roomCode}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Unable to join this room.');
-      // Returning student with a saved session skips registration entirely.
       if (getStudentSession(roomCode)) {
         router.push(`/play/${roomCode}`);
         return;
@@ -70,17 +70,21 @@ export default function JoinClient({ initialCode }: { initialCode?: string }) {
   }
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-center px-4 py-10 bg-gradient-to-b from-white to-blue-50">
-      <div className="mb-8"><Logo size="lg" /></div>
-
+    <AuthShell>
       {!room ? (
         <Card className="w-full max-w-md p-8">
-          <h1 className="text-2xl font-extrabold mb-1">Join a game</h1>
-          <p className="text-slate-500 mb-6">Enter the room code shown on the classroom screen.</p>
-          <form onSubmit={(e) => { e.preventDefault(); if (code.trim()) checkRoom(code.trim().toUpperCase()); }} className="space-y-4">
+          <h1 className="font-display mb-1 text-3xl text-white">Join a game</h1>
+          <p className="mb-6 font-body text-sm text-white/60">Enter the room code shown on the classroom screen.</p>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (code.trim()) checkRoom(code.trim().toUpperCase());
+            }}
+            className="space-y-4"
+          >
             <ErrorBanner message={error} />
             <input
-              className={`${inputClass} text-center text-3xl font-black tracking-[0.35em] uppercase py-4`}
+              className={`${inputClass} py-4 text-center font-display text-3xl tracking-[0.35em] uppercase`}
               placeholder="AB29KQ"
               maxLength={6}
               value={code}
@@ -88,23 +92,33 @@ export default function JoinClient({ initialCode }: { initialCode?: string }) {
               autoFocus
               aria-label="Room code"
             />
-            <Button type="submit" className="w-full text-lg py-3" disabled={loading || code.trim().length < 4}>
+            <Button type="submit" variant="login" className="w-full py-3" disabled={loading || code.trim().length < 4}>
               {loading ? 'Checking…' : 'Join Game'}
             </Button>
           </form>
-          <p className="mt-6 text-center text-sm text-slate-500">
-            Are you a teacher? <Link href="/login" className="text-primary font-semibold hover:underline">Sign in here</Link>
+          <p className="mt-6 text-center font-body text-sm text-white/55">
+            Are you a teacher?{' '}
+            <Link href="/login" className="font-medium text-primary hover:underline">
+              Sign in here
+            </Link>
           </p>
         </Card>
       ) : (
         <Card className="w-full max-w-md p-8">
-          <p className="text-sm font-bold text-primary uppercase tracking-wide mb-1">Room {room.roomCode}</p>
-          <h1 className="text-2xl font-extrabold mb-6">{room.title}</h1>
+          <p className="eyebrow mb-1 text-primary">Room {room.roomCode}</p>
+          <h1 className="font-display mb-6 text-3xl text-white">{room.title}</h1>
           <form onSubmit={joinGame} className="space-y-5">
             <ErrorBanner message={error} />
             <Field label="Your display name">
-              <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)}
-                placeholder="Alex" maxLength={24} required autoFocus />
+              <input
+                className={inputClass}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Alex"
+                maxLength={24}
+                required
+                autoFocus
+              />
             </Field>
             {room.allowTeamSelect ? (
               <Field label="Choose your team">
@@ -113,28 +127,42 @@ export default function JoinClient({ initialCode }: { initialCode?: string }) {
                     const team = room.teams[id];
                     const selected = teamId === id;
                     return (
-                      <button key={id} type="button" onClick={() => setTeamId(id)}
-                        className={`rounded-2xl border-4 p-4 text-center transition-all cursor-pointer ${selected ? 'scale-105' : 'opacity-70 hover:opacity-100'}`}
-                        style={{ borderColor: team.color, background: selected ? `${team.color}22` : 'white' }}>
-                        <div className="text-4xl mb-1">{team.icon}</div>
-                        <div className="font-extrabold" style={{ color: team.color }}>{team.name}</div>
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => setTeamId(id)}
+                        className={`cursor-pointer rounded-2xl border-4 p-4 text-center transition-all ${
+                          selected ? 'scale-105' : 'opacity-70 hover:opacity-100'
+                        }`}
+                        style={{ borderColor: team.color, background: selected ? `${team.color}22` : 'rgba(255,255,255,0.05)' }}
+                      >
+                        <div className="mb-1 flex justify-center">
+                          <TeamIcon icon={team.icon} size={36} color={team.color} />
+                        </div>
+                        <div className="font-ui font-semibold" style={{ color: team.color }}>
+                          {team.name}
+                        </div>
                       </button>
                     );
                   })}
                 </div>
               </Field>
             ) : (
-              <p className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 text-sm font-medium text-primary">
+              <p className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 font-body text-sm font-medium text-primary">
                 Your teacher will assign you to a team.
               </p>
             )}
-            <Button type="submit" className="w-full text-lg py-3"
-              disabled={loading || !name.trim() || (room.allowTeamSelect && !teamId)}>
+            <Button
+              type="submit"
+              variant="login"
+              className="w-full py-3"
+              disabled={loading || !name.trim() || (room.allowTeamSelect && !teamId)}
+            >
               {loading ? 'Joining…' : room.allowTeamSelect && teamId ? `Join ${room.teams[teamId].name}` : 'Join Game'}
             </Button>
           </form>
         </Card>
       )}
-    </div>
+    </AuthShell>
   );
 }

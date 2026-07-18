@@ -18,7 +18,7 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
 
   if (!ready) {
     return (
-      <div className="min-h-full flex items-center justify-center text-slate-500 font-semibold">
+      <div className="flex min-h-full items-center justify-center bg-secondary font-ui text-sm font-medium text-white/55">
         Loading…
       </div>
     );

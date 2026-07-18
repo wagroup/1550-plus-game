@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api, setSession } from '@/lib/client-api';
-import { Logo, Button, Card, Field, inputClass, ErrorBanner } from '@/components/ui';
+import { Button, Card, Field, inputClass, ErrorBanner, AuthShell } from '@/components/ui';
 import type { Teacher } from '@/lib/types';
 
 export default function Register() {
@@ -34,34 +34,56 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-center px-4 py-10 bg-gradient-to-b from-white to-blue-50">
-      <div className="mb-8"><Logo size="lg" /></div>
+    <AuthShell>
       <Card className="w-full max-w-md p-8">
-        <h1 className="text-2xl font-extrabold mb-1">Create your teacher account</h1>
-        <p className="text-slate-500 mb-6">Free for your classroom.</p>
+        <h1 className="font-display mb-1 text-3xl text-white">Create your teacher account</h1>
+        <p className="mb-6 font-body text-sm text-white/60">Free for your classroom.</p>
         <form onSubmit={submit} className="space-y-4">
           <ErrorBanner message={error} />
           <Field label="Your name">
-            <input className={inputClass} required value={name} onChange={(e) => setName(e.target.value)}
-              placeholder="Ms. Rivera" autoComplete="name" />
+            <input
+              className={inputClass}
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ms. Rivera"
+              autoComplete="name"
+            />
           </Field>
           <Field label="Email">
-            <input className={inputClass} type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@school.edu" autoComplete="email" />
+            <input
+              className={inputClass}
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@school.edu"
+              autoComplete="email"
+            />
           </Field>
           <Field label="Password (at least 6 characters)">
-            <input className={inputClass} type="password" required minLength={6} value={password}
-              onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" autoComplete="new-password" />
+            <input
+              className={inputClass}
+              type="password"
+              required
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              autoComplete="new-password"
+            />
           </Field>
-          <Button type="submit" className="w-full text-lg" disabled={loading}>
+          <Button type="submit" variant="login" className="w-full" disabled={loading}>
             {loading ? 'Creating account…' : 'Create Account'}
           </Button>
         </form>
-        <p className="mt-6 text-center text-slate-600">
+        <p className="mt-6 text-center font-body text-sm text-white/65">
           Already have an account?{' '}
-          <Link href="/login" className="text-primary font-semibold hover:underline">Sign in</Link>
+          <Link href="/login" className="font-medium text-primary hover:underline">
+            Sign in
+          </Link>
         </p>
       </Card>
-    </div>
+    </AuthShell>
   );
 }

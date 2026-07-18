@@ -1,39 +1,134 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { Icon } from './icons';
 
-export function Logo({ size = 'md', light = false }: { size?: 'sm' | 'md' | 'lg'; light?: boolean }) {
-  const textSize = size === 'lg' ? 'text-4xl' : size === 'sm' ? 'text-xl' : 'text-2xl';
+type Surface = 'dark' | 'light';
+
+const SurfaceContext = createContext<Surface>('dark');
+
+export function SurfaceProvider({ value, children }: { value: Surface; children: React.ReactNode }) {
+  return <SurfaceContext.Provider value={value}>{children}</SurfaceContext.Provider>;
+}
+
+export function useSurface(): Surface {
+  return useContext(SurfaceContext);
+}
+
+function ArrowIcon({ className = '' }: { className?: string }) {
   return (
-    <Link href="/" className={`font-extrabold tracking-tight ${textSize} ${light ? 'text-white' : 'text-navy'}`}>
-      Class<span className="text-primary">Buzz</span>
-      <span className="ml-1 align-middle" role="img" aria-label="buzzer">🔔</span>
+    <svg className={className} width="27" height="27" viewBox="0 0 27 27" fill="none" aria-hidden>
+      <path
+        d="M6 13.5H19M19 13.5L13.5 8M19 13.5L13.5 19"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+const LOGO_HEIGHT: Record<'sm' | 'md' | 'lg', string> = {
+  sm: 'h-8',
+  md: 'h-10',
+  lg: 'h-14',
+};
+
+export function Logo({ size = 'md', light: _light = true }: { size?: 'sm' | 'md' | 'lg'; light?: boolean }) {
+  return (
+    <Link href="/" className="inline-flex shrink-0 items-center">
+      <Image
+        src="/assets/logo.png"
+        alt="1550+"
+        width={500}
+        height={265}
+        className={`${LOGO_HEIGHT[size]} w-auto`}
+        priority={size === 'lg'}
+      />
     </Link>
   );
 }
 
+const PRIMARY_TONE: Record<string, string> = {
+  primary: '',
+  login: '',
+  secondary: '',
+  outline: '',
+  ghost: '',
+  danger: 'btn-primary--danger',
+  success: 'btn-primary--success',
+};
+
+const MINIMAL_TONE: Record<string, string> = {
+  primary: 'btn-minimal--primary',
+  login: 'btn-minimal--primary',
+  secondary: '',
+  outline: '',
+  ghost: '',
+  danger: 'btn-minimal--danger',
+  success: 'btn-minimal--success',
+};
+
 export function Button({
   children,
   variant = 'primary',
+  showArrow,
+  compact = false,
+  prominent = false,
   className = '',
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'ghost';
+  variant?: 'primary' | 'login' | 'secondary' | 'outline' | 'danger' | 'success' | 'ghost' | 'muted';
+  showArrow?: boolean;
+  compact?: boolean;
+  /** Force the large marketing pill (legacy) */
+  prominent?: boolean;
 }) {
-  const styles: Record<string, string> = {
-    primary: 'bg-primary text-white hover:bg-blue-700 shadow-sm',
-    secondary: 'bg-white text-navy border border-slate-300 hover:bg-slate-50',
-    danger: 'bg-incorrect text-white hover:bg-red-700',
-    success: 'bg-correct text-white hover:bg-green-700',
-    ghost: 'bg-transparent text-slate-600 hover:bg-slate-100',
-  };
+  const surface = useSurface();
+  const isCompact = compact || variant === 'ghost' || variant === 'muted';
+  const useMinimal = !prominent;
+
+  if (variant === 'muted') {
+    return (
+      <button
+        className={`btn-minimal btn-minimal--dark ${isCompact ? 'btn-minimal--compact' : ''} ${className}`}
+        {...props}
+      >
+        <span className="relative z-10 flex items-center gap-2">{children}</span>
+      </button>
+    );
+  }
+
+  if (useMinimal) {
+    const onDark = surface === 'dark';
+    const tone = MINIMAL_TONE[variant] ?? '';
+    const onDarkSecondary =
+      onDark && ['secondary', 'outline', 'ghost'].includes(variant) ? 'btn-minimal--on-dark' : '';
+    return (
+      <button
+        className={`btn-minimal ${tone} ${onDarkSecondary} ${isCompact ? 'btn-minimal--compact' : ''} ${className}`}
+        {...props}
+      >
+        <span className="relative z-10 flex items-center gap-2">{children}</span>
+      </button>
+    );
+  }
+
+  const withArrow = showArrow ?? (variant === 'primary' && !isCompact);
+  const tone = PRIMARY_TONE[variant] ?? '';
+
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ${styles[variant]} ${className}`}
+      className={`btn-primary ${tone} ${isCompact ? 'btn-primary--compact' : ''} ${className}`}
       {...props}
     >
-      {children}
+      <span className="relative z-10 flex items-center gap-3">
+        {children}
+        {withArrow && <ArrowIcon />}
+      </span>
     </button>
   );
 }
@@ -41,37 +136,105 @@ export function Button({
 export function Card({
   children,
   className = '',
+  variant = 'glass',
   style,
 }: {
   children: React.ReactNode;
   className?: string;
+  variant?: 'glass' | 'dark' | 'light' | 'quote';
   style?: React.CSSProperties;
 }) {
+  const variants: Record<string, string> = {
+    glass: 'glass-card rounded-2xl',
+    dark: 'stat-card',
+    light: 'feature-card rounded-2xl shadow-sm',
+    quote: 'quote-block',
+  };
   return (
-    <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 ${className}`} style={style}>
+    <div className={`${variants[variant]} ${className}`} style={style}>
       {children}
     </div>
   );
 }
 
-export function Field({ label, children }: { label: string; children: React.ReactNode }) {
+export function Field({
+  label,
+  children,
+  light,
+}: {
+  label: string;
+  children: React.ReactNode;
+  light?: boolean;
+}) {
+  const onLight = light ?? useSurface() === 'light';
   return (
     <label className="block">
-      <span className="block text-sm font-semibold text-slate-700 mb-1.5">{label}</span>
+      <span
+        className={`mb-1.5 block text-sm font-medium ${onLight ? 'text-text-body-dark' : 'text-white/80'}`}
+      >
+        {label}
+      </span>
       {children}
     </label>
   );
 }
 
-export const inputClass =
-  'w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-navy placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white';
+export const inputClass = 'input-ds';
+
+export const inputClassLight = 'input-ds-light';
 
 export function ErrorBanner({ message }: { message: string | null }) {
+  const onLight = useSurface() === 'light';
   if (!message) return null;
   return (
-    <div className="rounded-xl bg-red-50 border border-red-200 text-incorrect px-4 py-3 text-sm font-medium animate-pop" role="alert">
+    <div
+      className={`animate-pop rounded-xl px-4 py-3 text-sm font-medium ${
+        onLight
+          ? 'border border-incorrect/30 bg-red-50 text-red-700'
+          : 'border border-incorrect/40 bg-incorrect/15 text-red-200'
+      }`}
+      role="alert"
+    >
       {message}
     </div>
+  );
+}
+
+export function AuthShell({
+  children,
+  footer,
+}: {
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+}) {
+  return (
+    <div className="bg-glow min-h-full bg-secondary">
+      <div className="flex min-h-full flex-col items-center justify-center px-4 py-10">
+        <div className="mb-8">
+          <Logo size="lg" />
+        </div>
+        {children}
+        {footer}
+      </div>
+    </div>
+  );
+}
+
+export function PageNavbar({
+  children,
+  className = '',
+  sticky = false,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  sticky?: boolean;
+}) {
+  return (
+    <header className={`container-ds z-50 py-4 md:py-5 ${sticky ? 'sticky top-0' : ''} ${className}`}>
+      <nav className="glass-navbar flex items-center justify-between gap-4 rounded-lg px-5 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
+        {children}
+      </nav>
+    </header>
   );
 }
 
@@ -99,7 +262,7 @@ export function useCountdown(endsAt: number | null, serverNow?: number) {
 export function CountdownRing({
   remainingMs,
   totalSeconds,
-  color = '#2563EB',
+  color = '#2A4DFF',
 }: {
   remainingMs: number;
   totalSeconds: number;
@@ -112,7 +275,7 @@ export function CountdownRing({
   return (
     <div className="relative inline-flex items-center justify-center">
       <svg width="110" height="110" className="-rotate-90">
-        <circle cx="55" cy="55" r={r} fill="none" stroke="#E2E8F0" strokeWidth="8" />
+        <circle cx="55" cy="55" r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="8" />
         <circle
           cx="55"
           cy="55"
@@ -126,7 +289,7 @@ export function CountdownRing({
           style={{ transition: 'stroke-dashoffset 200ms linear' }}
         />
       </svg>
-      <span className="absolute text-3xl font-extrabold tabular-nums" style={{ color }}>
+      <span className="absolute text-3xl font-display tabular-nums" style={{ color }}>
         {seconds}
       </span>
     </div>
@@ -162,10 +325,10 @@ export function Confetti({ colors }: { colors: string[] }) {
   );
 }
 
-export function ConnectionDot({ connected, label }: { connected: boolean; label?: string }) {
+export function ConnectionDot({ connected, label, light }: { connected: boolean; label?: string; light?: boolean }) {
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500">
-      <span className={`w-2.5 h-2.5 rounded-full ${connected ? 'bg-correct' : 'bg-incorrect'}`} aria-hidden />
+    <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${light ? 'text-text-secondary' : 'text-white/55'}`}>
+      <span className={`h-2.5 w-2.5 rounded-full ${connected ? 'bg-correct' : 'bg-incorrect'}`} aria-hidden />
       {label ?? (connected ? 'Connected' : 'Disconnected')}
     </span>
   );
@@ -190,11 +353,11 @@ export function ConfirmDialog({
 }) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy/60 p-4" role="dialog" aria-modal>
-      <Card className="max-w-sm w-full p-6 animate-pop">
-        <h3 className="text-lg font-bold mb-2">{title}</h3>
-        <p className="text-slate-600 mb-5">{message}</p>
-        <div className="flex gap-3 justify-end">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-secondary/80 p-4 backdrop-blur-sm" role="dialog" aria-modal>
+      <Card className="w-full max-w-sm animate-pop p-6">
+        <h3 className="font-display mb-2 text-2xl text-white">{title}</h3>
+        <p className="mb-5 font-body text-sm text-white/70">{message}</p>
+        <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={onCancel}>
             Cancel
           </Button>

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import { useCountdown, Confetti } from '@/components/ui';
+import { Icon, IconLabel, TeamIcon, TeamIconLabel } from '@/components/icons';
 import { useRoomPoll } from '@/lib/use-room';
 import { sounds } from '@/components/sound';
 import type { GameState, TeamId } from '@/lib/types';
@@ -29,14 +30,14 @@ export default function ProjectorPage() {
   }, [state]);
 
   if (error && !state) {
-    return <div className="min-h-full bg-navy text-white flex items-center justify-center text-3xl font-bold">{error}</div>;
+    return <div className="min-h-full bg-secondary text-white flex items-center justify-center text-3xl font-bold">{error}</div>;
   }
   if (!state) {
-    return <div className="min-h-full bg-navy text-white flex items-center justify-center text-3xl font-bold animate-pulse">Connecting…</div>;
+    return <div className="min-h-full bg-secondary text-white flex items-center justify-center text-3xl font-bold animate-pulse">Connecting…</div>;
   }
 
   return (
-    <div className="min-h-full bg-navy text-white flex flex-col overflow-hidden">
+    <div className="min-h-full bg-secondary text-white flex flex-col overflow-hidden">
       {state.phase === 'lobby' && <ProjectorLobby state={state} />}
       {state.phase === 'ended' && <ProjectorFinal state={state} />}
       {state.phase !== 'lobby' && state.phase !== 'ended' && <ProjectorGame state={state} />}
@@ -58,10 +59,10 @@ function ScoreBar({ state, highlight }: { state: GameState; highlight?: TeamId |
             } ${highlight === teamId ? 'scale-105 ring-4 ring-white/60' : ''}`}
             style={{ background: team.color }}
           >
-            <span className="text-5xl">{team.icon}</span>
+            <TeamIcon icon={team.icon} size={48} color="#fff" />
             <div>
-              <p className="text-2xl font-extrabold leading-tight">{team.name}</p>
-              <p className="text-6xl font-black tabular-nums leading-none">{team.score}</p>
+              <p className="font-display text-2xl leading-tight">{team.name}</p>
+              <p className="font-display text-6xl tabular-nums leading-none">{team.score}</p>
             </div>
           </div>
         );
@@ -75,16 +76,16 @@ function ProjectorLobby({ state }: { state: GameState }) {
   const total = state.teams.A.members.length + state.teams.B.members.length + state.unassigned.length;
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
-      <h1 className="text-5xl font-black mb-2">{state.title}</h1>
-      <p className="text-2xl text-slate-300 mb-8">Join the game now!</p>
+      <h1 className="font-display text-5xl mb-2">{state.title}</h1>
+      <p className="text-2xl text-white/70 mb-8">Join the game now!</p>
       <div className="flex items-center gap-14">
         <div className="bg-white rounded-3xl p-6">
           <QRCodeSVG value={joinUrl} size={220} />
         </div>
         <div>
-          <p className="text-2xl text-slate-300 font-bold mb-2">Room code</p>
-          <p className="text-8xl font-black tracking-[0.25em] text-warning">{state.roomCode}</p>
-          <p className="text-xl text-slate-400 mt-3">{typeof window !== 'undefined' ? window.location.host : ''}/join</p>
+          <p className="text-2xl text-white/70 font-bold mb-2">Room code</p>
+          <p className="font-display text-8xl tracking-[0.25em] text-warning">{state.roomCode}</p>
+          <p className="text-xl text-white/55 mt-3">{typeof window !== 'undefined' ? window.location.host : ''}/join</p>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-10 mt-12 w-full max-w-4xl">
@@ -92,7 +93,9 @@ function ProjectorLobby({ state }: { state: GameState }) {
           const team = state.teams[teamId];
           return (
             <div key={teamId} className="rounded-2xl p-6" style={{ background: `${team.color}33`, border: `3px solid ${team.color}` }}>
-              <p className="text-3xl font-extrabold mb-3">{team.icon} {team.name}</p>
+              <TeamIconLabel icon={team.icon} size={28} color={team.color} className="font-display mb-3 text-3xl justify-center">
+                {team.name}
+              </TeamIconLabel>
               <div className="flex flex-wrap gap-2 justify-center min-h-10">
                 {team.members.map((m) => (
                   <span key={m.id} className={`rounded-full px-4 py-1.5 text-lg font-bold bg-white/15 ${!m.connected ? 'opacity-40' : ''}`}>
@@ -104,7 +107,7 @@ function ProjectorLobby({ state }: { state: GameState }) {
           );
         })}
       </div>
-      <p className="text-2xl text-slate-300 mt-10 animate-pulse">
+      <p className="text-2xl text-white/70 mt-10 animate-pulse">
         {total} student{total !== 1 ? 's' : ''} connected — starting soon…
       </p>
     </div>
@@ -122,8 +125,8 @@ function ProjectorGame({ state }: { state: GameState }) {
   return (
     <>
       <div className="flex items-center justify-between px-10 pt-6">
-        <p className="text-xl font-bold text-slate-400">{state.title}</p>
-        <p className="text-xl font-bold text-slate-400">
+        <p className="text-xl font-bold text-white/55">{state.title}</p>
+        <p className="text-xl font-bold text-white/55">
           Question {state.currentQuestionIndex + 1} of {state.totalQuestions}
         </p>
       </div>
@@ -133,13 +136,13 @@ function ProjectorGame({ state }: { state: GameState }) {
       <div className="flex-1 flex flex-col items-center justify-center px-14 pb-10 text-center">
         {phase === 'paused' ? (
           <>
-            <p className="text-7xl mb-6">⏸</p>
-            <h2 className="text-6xl font-black mb-4">Game Paused</h2>
-            <p className="text-2xl text-slate-300 animate-pulse">Waiting for the teacher…</p>
+            <Icon name="pause" size={80} className="mb-6 text-white/70" />
+            <h2 className="font-display text-6xl mb-4">Game Paused</h2>
+            <p className="text-2xl text-white/70 animate-pulse">Waiting for the teacher…</p>
           </>
         ) : (
           <>
-            <h2 className="text-5xl md:text-6xl font-black leading-tight mb-8 max-w-6xl">{q?.text}</h2>
+            <h2 className="font-body mb-8 max-w-6xl text-5xl leading-tight normal-case tracking-normal md:text-6xl">{q?.text}</h2>
             {q && q.options.length > 0 && (
               <div className="grid grid-cols-2 gap-4 w-full max-w-4xl mb-8">
                 {q.options.map((opt, i) => {
@@ -157,24 +160,28 @@ function ProjectorGame({ state }: { state: GameState }) {
 
             {phase === 'question_reading' && readingLeft !== null && (
               <div className="text-center">
-                <p className="text-3xl text-slate-300 font-bold mb-2">Read the question…</p>
-                <p className="text-8xl font-black text-warning tabular-nums">{Math.ceil(readingLeft / 1000)}</p>
+                <p className="text-3xl text-white/70 font-bold mb-2">Read the question…</p>
+                <p className="font-display text-8xl text-warning tabular-nums">{Math.ceil(readingLeft / 1000)}</p>
               </div>
             )}
             {phase === 'question_idle' && (
-              <p className="text-3xl font-bold text-waiting">🔒 Buzzer closed — get ready</p>
+              <p className="inline-flex items-center justify-center gap-3 text-3xl font-bold text-waiting">
+                <Icon name="lock" size={32} /> Buzzer closed — get ready
+              </p>
             )}
             {phase === 'buzzer_active' && (
-              <div className="rounded-3xl bg-warning text-navy px-16 py-6 text-6xl font-black animate-pulse">
-                🔔 BUZZ NOW!
+              <div className="font-display inline-flex animate-pulse items-center justify-center gap-4 rounded-3xl bg-warning px-16 py-6 text-6xl text-secondary">
+                <Icon name="notification" size={48} color="currentColor" />
+                BUZZ NOW!
               </div>
             )}
             {phase === 'team_buzzed' && buzzTeam && (
               <div className="text-center animate-pop">
-                <div className="rounded-3xl px-16 py-6 text-5xl font-black mb-4" style={{ background: buzzTeam.color }}>
-                  {buzzTeam.icon} {buzzTeam.name} Buzzed First!
+                <div className="font-display mb-4 inline-flex items-center justify-center gap-4 rounded-3xl px-16 py-6 text-5xl" style={{ background: buzzTeam.color }}>
+                  <TeamIcon icon={buzzTeam.icon} size={40} color="#fff" />
+                  {buzzTeam.name} Buzzed First!
                 </div>
-                <p className="text-3xl text-slate-300 font-bold">
+                <p className="text-3xl text-white/70 font-bold">
                   Team discussion…{discussionLeft !== null && (
                     <span className="text-warning tabular-nums ml-3">{Math.ceil(discussionLeft / 1000)}s</span>
                   )}
@@ -184,13 +191,18 @@ function ProjectorGame({ state }: { state: GameState }) {
             {phase === 'round_result' && (
               <div className="text-center animate-pop">
                 {state.round?.result === 'correct' && buzzTeam ? (
-                  <div className="rounded-3xl bg-correct px-16 py-6 text-5xl font-black mb-4">
-                    ✅ Correct! +{q?.points} for {state.teams[state.round.resultTeamId!]?.name}
+                  <div className="font-display mb-4 inline-flex items-center justify-center gap-4 rounded-3xl bg-correct px-16 py-6 text-5xl">
+                    <Icon name="check" size={40} />
+                    Correct! +{q?.points} for {state.teams[state.round.resultTeamId!]?.name}
                   </div>
                 ) : state.round?.result === 'skipped' ? (
-                  <div className="rounded-3xl bg-waiting px-16 py-6 text-5xl font-black mb-4">⏭ Question skipped</div>
+                  <div className="font-display mb-4 inline-flex items-center justify-center gap-4 rounded-3xl bg-waiting px-16 py-6 text-5xl">
+                    <Icon name="skip" size={40} /> Question skipped
+                  </div>
                 ) : (
-                  <div className="rounded-3xl bg-incorrect px-16 py-6 text-5xl font-black mb-4 animate-shake">❌ No correct answer</div>
+                  <div className="font-display mb-4 inline-flex animate-shake items-center justify-center gap-4 rounded-3xl bg-incorrect px-16 py-6 text-5xl">
+                    <Icon name="cancel" size={40} /> No correct answer
+                  </div>
                 )}
                 {state.round?.answerRevealed && q?.correctAnswer && (
                   <p className="text-4xl font-bold mt-4">
@@ -198,7 +210,7 @@ function ProjectorGame({ state }: { state: GameState }) {
                   </p>
                 )}
                 {state.round?.answerRevealed && q?.explanation && (
-                  <p className="text-2xl text-slate-300 mt-3 max-w-4xl">{q.explanation}</p>
+                  <p className="text-2xl text-white/70 mt-3 max-w-4xl">{q.explanation}</p>
                 )}
               </div>
             )}
@@ -216,14 +228,18 @@ function ProjectorFinal({ state }: { state: GameState }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-10 relative">
       <Confetti colors={colors} />
-      <p className="text-3xl text-slate-300 font-bold uppercase tracking-widest mb-4">Final Result</p>
+      <p className="text-3xl text-white/70 font-bold uppercase tracking-widest mb-4">Final Result</p>
       {winner ? (
         <>
-          <div className="text-9xl mb-4 animate-pop">{winner.icon}</div>
-          <h1 className="text-8xl font-black animate-pop" style={{ color: winner.color }}>{winner.name} Wins!</h1>
+          <div className="mb-4 animate-pop">
+            <TeamIcon icon={winner.icon} size={96} color={winner.color} />
+          </div>
+          <h1 className="font-display text-8xl animate-pop" style={{ color: winner.color }}>{winner.name} Wins!</h1>
         </>
       ) : (
-        <h1 className="text-8xl font-black text-warning animate-pop">It&apos;s a Tie! 🤝</h1>
+        <h1 className="font-display inline-flex animate-pop items-center gap-4 text-8xl text-warning">
+          <Icon name="handshake" size={72} /> It&apos;s a Tie!
+        </h1>
       )}
       <div className="flex items-center gap-16 mt-12">
         {(['A', 'B'] as TeamId[]).map((teamId) => {
@@ -231,12 +247,15 @@ function ProjectorFinal({ state }: { state: GameState }) {
           return (
             <div key={teamId} className="text-center rounded-3xl px-14 py-8"
               style={{ background: `${team.color}33`, border: `4px solid ${team.color}` }}>
-              <div className="text-6xl mb-2">{team.icon}</div>
-              <p className="text-3xl font-extrabold" style={{ color: team.color }}>{team.name}</p>
-              <p className="text-8xl font-black tabular-nums">{team.score}</p>
+              <div className="mb-2 flex justify-center">
+                <TeamIcon icon={team.icon} size={56} color={team.color} />
+              </div>
+              <p className="font-display text-3xl" style={{ color: team.color }}>{team.name}</p>
+              <p className="font-display text-8xl tabular-nums">{team.score}</p>
               {report && (
-                <p className="text-xl text-slate-300 mt-2">
-                  ✓ {report.teams[teamId].correct} · ✗ {report.teams[teamId].incorrect}
+                <p className="mt-2 inline-flex items-center gap-4 text-xl text-white/70">
+                  <span className="inline-flex items-center gap-1"><Icon name="check" size={18} /> {report.teams[teamId].correct}</span>
+                  <span className="inline-flex items-center gap-1"><Icon name="cancel" size={18} /> {report.teams[teamId].incorrect}</span>
                 </p>
               )}
             </div>

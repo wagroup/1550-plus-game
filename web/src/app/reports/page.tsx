@@ -5,6 +5,7 @@ import Link from 'next/link';
 import RequireAuth from '@/components/RequireAuth';
 import TeacherLayout from '@/components/TeacherLayout';
 import { Card } from '@/components/ui';
+import { Icon, TeamIconLabel } from '@/components/icons';
 import { api } from '@/lib/client-api';
 import type { GameReport } from '@/lib/types';
 
@@ -26,10 +27,12 @@ function Reports() {
   return (
     <TeacherLayout title="Game Reports">
       {reports.length === 0 ? (
-        <Card className="p-10 text-center text-slate-500">
-          <p className="text-4xl mb-3">📊</p>
-          <p className="font-semibold">No completed games yet</p>
-          <p className="text-sm">Reports appear here after a game ends.</p>
+        <Card variant="light" className="p-10 text-center text-text-secondary">
+          <div className="mb-3 flex justify-center text-primary">
+            <Icon name="chart" size={40} />
+          </div>
+          <p className="font-ui font-semibold text-text-body-dark">No completed games yet</p>
+          <p className="font-body text-sm">Reports appear here after a game ends.</p>
         </Card>
       ) : (
         <div className="space-y-3">
@@ -37,24 +40,28 @@ function Reports() {
             const winner = r.winner ? r.teams[r.winner] : null;
             return (
               <Link key={r.id} href={`/reports/${r.id}`} className="block">
-                <Card className="p-5 hover:border-primary transition-colors flex flex-wrap items-center justify-between gap-3">
+                <Card variant="light" className="flex flex-wrap items-center justify-between gap-3 p-5 transition-colors hover:border-primary">
                   <div>
-                    <p className="font-bold text-lg">{r.title}</p>
-                    <p className="text-sm text-slate-500">
+                    <p className="font-ui text-lg font-semibold text-text-body-dark">{r.title}</p>
+                    <p className="font-ui text-sm text-text-secondary">
                       {r.endedAt ? new Date(r.endedAt).toLocaleString() : '—'} · {r.totalQuestions} questions
                       {r.durationMs ? ` · ${Math.round(r.durationMs / 60000)} min` : ''}
                     </p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="font-bold" style={{ color: r.teams.A.color }}>
-                      {r.teams.A.icon} {r.teams.A.score}
-                    </span>
-                    <span className="text-slate-400 font-black text-sm">VS</span>
-                    <span className="font-bold" style={{ color: r.teams.B.color }}>
-                      {r.teams.B.icon} {r.teams.B.score}
-                    </span>
-                    <span className="text-sm font-bold bg-slate-100 rounded-full px-3 py-1">
-                      {r.isTie ? '🤝 Tie' : `🏆 ${winner?.name}`}
+                    <TeamIconLabel icon={r.teams.A.icon} size={18} color={r.teams.A.color}>
+                      {r.teams.A.score}
+                    </TeamIconLabel>
+                    <span className="font-display text-sm text-text-secondary">VS</span>
+                    <TeamIconLabel icon={r.teams.B.icon} size={18} color={r.teams.B.color}>
+                      {r.teams.B.score}
+                    </TeamIconLabel>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 font-ui text-sm font-bold text-text-body-dark">
+                      {r.isTie ? (
+                        <><Icon name="handshake" size={16} /> Tie</>
+                      ) : (
+                        <><Icon name="award" size={16} /> {winner?.name}</>
+                      )}
                     </span>
                   </div>
                 </Card>

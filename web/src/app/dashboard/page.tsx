@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import RequireAuth from '@/components/RequireAuth';
 import TeacherLayout from '@/components/TeacherLayout';
 import { Button, Card } from '@/components/ui';
+import { Icon } from '@/components/icons';
 import { api, getStoredTeacher } from '@/lib/client-api';
 import type { GameDef, GameReport, QuestionSet } from '@/lib/types';
 
@@ -44,36 +45,40 @@ function TeacherLayoutedDashboard() {
   ];
 
   return (
-    <TeacherLayout title={`Welcome back, ${teacher?.name?.split(' ')[0] || 'Teacher'} 👋`}>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <TeacherLayout title={`Welcome back, ${teacher?.name?.split(' ')[0] || 'Teacher'}`}>
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((s) => (
-          <Card key={s.label} className="p-5">
-            <p className="text-sm font-semibold text-slate-500">{s.label}</p>
-            <p className="text-3xl font-extrabold mt-1">{s.value}</p>
+          <Card key={s.label} variant="light" className="p-5">
+            <p className="font-ui text-sm font-medium text-text-secondary">{s.label}</p>
+            <p className="font-display mt-1 text-3xl text-primary">{s.value}</p>
           </Card>
         ))}
       </div>
 
-      <div className="flex flex-wrap gap-4 mb-10">
-        <Button className="text-lg px-6 py-3" onClick={() => router.push('/create-game')}>🎮 Create New Game</Button>
-        <Button variant="secondary" className="text-lg px-6 py-3" onClick={() => router.push('/question-sets')}>
-          📝 Manage Question Sets
+      <div className="mb-10 flex flex-wrap gap-4">
+        <Button showArrow={false} onClick={() => router.push('/create-game')}>
+          Create New Game
+        </Button>
+        <Button variant="outline" showArrow={false} onClick={() => router.push('/question-sets')}>
+          Manage Question Sets
         </Button>
       </div>
 
       {activeGames.length > 0 && (
         <section className="mb-10">
-          <h2 className="text-xl font-bold mb-4">Active games</h2>
-          <div className="grid md:grid-cols-2 gap-4">
+          <h2 className="font-display mb-4 text-2xl text-text-body-dark">Active games</h2>
+          <div className="grid gap-4 md:grid-cols-2">
             {activeGames.map((g) => (
-              <Card key={g.id} className="p-5 flex items-center justify-between border-primary border-2">
+              <Card key={g.id} variant="light" className="flex items-center justify-between border-2 border-primary p-5">
                 <div>
-                  <p className="font-bold">{g.title}</p>
-                  <p className="text-sm text-slate-500">
+                  <p className="font-ui font-semibold text-text-body-dark">{g.title}</p>
+                  <p className="font-ui text-sm text-text-secondary">
                     Room code: <span className="font-mono font-bold text-primary">{g.roomCode}</span>
                   </p>
                 </div>
-                <Button onClick={() => router.push(`/host/${g.roomCode}`)}>Open Host View</Button>
+                <Button variant="login" showArrow={false} onClick={() => router.push(`/host/${g.roomCode}`)}>
+                  Open Host
+                </Button>
               </Card>
             ))}
           </div>
@@ -81,39 +86,45 @@ function TeacherLayoutedDashboard() {
       )}
 
       <section>
-        <h2 className="text-xl font-bold mb-4">Recent games</h2>
+        <h2 className="font-display mb-4 text-2xl text-text-body-dark">Recent games</h2>
         {games.length === 0 ? (
-          <Card className="p-10 text-center text-slate-500">
-            <p className="text-4xl mb-3">🎯</p>
-            <p className="font-semibold mb-1">No games yet</p>
-            <p className="text-sm">Create your first game to get your class buzzing.</p>
+          <Card variant="light" className="p-10 text-center text-text-secondary">
+            <div className="mb-3 flex justify-center text-primary">
+              <Icon name="target" size={40} />
+            </div>
+            <p className="font-ui font-semibold text-text-body-dark mb-1">No games yet</p>
+            <p className="font-body text-sm">Create your first game to get your class buzzing.</p>
           </Card>
         ) : (
           <div className="space-y-3">
             {games.slice(0, 8).map((g) => {
               const report = reports.find((r) => r.id === g.id);
               return (
-                <Card key={g.id} className="p-4 flex flex-wrap items-center justify-between gap-3">
+                <Card key={g.id} variant="light" className="flex flex-wrap items-center justify-between gap-3 p-4">
                   <div>
-                    <p className="font-bold">{g.title}</p>
-                    <p className="text-sm text-slate-500">
+                    <p className="font-ui font-semibold text-text-body-dark">{g.title}</p>
+                    <p className="font-ui text-sm text-text-secondary">
                       {new Date(g.createdAt).toLocaleString()} · {g.teams.A.name} vs {g.teams.B.name}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     {g.live ? (
-                      <span className="text-xs font-bold bg-green-100 text-correct rounded-full px-3 py-1">LIVE</span>
+                      <span className="rounded-full bg-green-100 px-3 py-1 font-ui text-xs font-bold text-correct">LIVE</span>
                     ) : (
-                      <span className="text-xs font-bold bg-slate-100 text-slate-500 rounded-full px-3 py-1">
+                      <span className="rounded-full bg-primary/10 px-3 py-1 font-ui text-xs font-bold text-text-secondary">
                         {g.status === 'ended' ? 'ENDED' : 'CLOSED'}
                       </span>
                     )}
                     {report && (
-                      <Link href={`/reports/${g.id}`} className="text-primary font-semibold text-sm hover:underline">
+                      <Link href={`/reports/${g.id}`} className="font-ui text-sm font-semibold text-primary hover:underline">
                         View report
                       </Link>
                     )}
-                    {g.live && <Button variant="secondary" onClick={() => router.push(`/host/${g.roomCode}`)}>Host</Button>}
+                    {g.live && (
+                      <Button variant="outline" showArrow={false} onClick={() => router.push(`/host/${g.roomCode}`)}>
+                        Host
+                      </Button>
+                    )}
                   </div>
                 </Card>
               );
