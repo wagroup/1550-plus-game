@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button, ConnectionDot, useCountdown, Confetti } from '@/components/ui';
+import { Icon, IconLabel, TeamIcon } from '@/components/icons';
 import { getStudentSession, clearStudentSession } from '@/lib/client-api';
 import { useRoomPoll, studentBuzz, studentJoin } from '@/lib/use-room';
 import { sounds, vibrate } from '@/components/sound';
@@ -117,14 +118,14 @@ export default function PlayPage() {
 
   if (fatal || (error && !state)) {
     return (
-      <div className="min-h-full bg-navy text-white flex flex-col items-center justify-center gap-5 p-6 text-center">
+      <div className="min-h-full bg-secondary text-white flex flex-col items-center justify-center gap-5 p-6 text-center">
         <p className="text-xl font-bold">{fatal || error}</p>
         <Button onClick={() => router.push('/join')}>Join another game</Button>
       </div>
     );
   }
   if (!state || !session) {
-    return <div className="min-h-full bg-navy text-white flex items-center justify-center text-xl font-bold animate-pulse">Connecting…</div>;
+    return <div className="min-h-full bg-secondary text-white flex items-center justify-center text-xl font-bold animate-pulse">Connecting…</div>;
   }
 
   const myTeam = myTeamId ? state.teams[myTeamId] : null;
@@ -141,16 +142,19 @@ export default function PlayPage() {
         <div className="flex items-center gap-3">
           {myTeam ? (
             <div className="flex-1 rounded-xl px-4 py-2.5 flex items-center justify-between" style={{ background: myTeam.color }}>
-              <span className="font-extrabold truncate">{myTeam.icon} {myTeam.name}</span>
-              <span className="text-3xl font-black tabular-nums">{myTeam.score}</span>
+              <span className="font-display inline-flex items-center gap-2 truncate">
+                <TeamIcon icon={myTeam.icon} size={20} color="#fff" />
+                {myTeam.name}
+              </span>
+              <span className="font-display text-3xl tabular-nums">{myTeam.score}</span>
             </div>
           ) : (
-            <div className="flex-1 rounded-xl px-4 py-2.5 bg-white/10 font-bold text-slate-300">No team yet</div>
+            <div className="flex-1 rounded-xl px-4 py-2.5 bg-white/10 font-bold text-white/70">No team yet</div>
           )}
           {otherTeam && (
             <div className="rounded-xl px-4 py-2.5 bg-white/10 flex items-center gap-2 opacity-80">
-              <span className="font-bold">{otherTeam.icon}</span>
-              <span className="text-2xl font-black tabular-nums">{otherTeam.score}</span>
+              <TeamIcon icon={otherTeam.icon} size={20} color="#fff" />
+              <span className="font-display text-2xl tabular-nums">{otherTeam.score}</span>
             </div>
           )}
         </div>
@@ -161,9 +165,9 @@ export default function PlayPage() {
         {state.phase === 'ended' && <StudentFinal state={state} myTeamId={myTeamId} />}
         {state.phase === 'paused' && (
           <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
-            <p className="text-6xl">⏸</p>
-            <h2 className="text-3xl font-black">Game Paused</h2>
-            <p className="text-slate-300 animate-pulse">Waiting for your teacher…</p>
+            <Icon name="pause" size={64} className="text-white/70" />
+            <h2 className="font-display text-3xl">Game Paused</h2>
+            <p className="text-white/70 animate-pulse">Waiting for your teacher…</p>
           </div>
         )}
         {!state.teacherConnected && state.phase !== 'ended' && (
@@ -180,16 +184,18 @@ export default function PlayPage() {
 function StudentLobby({ state, myTeam }: { state: GameState; myTeam: GameState['teams']['A'] | null }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
-      <p className="text-5xl animate-pop">🎉</p>
-      <h2 className="text-2xl font-black">You&apos;re in!</h2>
+      <Icon name="game" size={56} className="animate-pop text-primary" />
+      <h2 className="font-display text-2xl">You&apos;re in!</h2>
       {myTeam ? (
         <>
           <div className="rounded-2xl px-8 py-5 animate-pop" style={{ background: myTeam.color }}>
-            <p className="text-4xl mb-1">{myTeam.icon}</p>
-            <p className="text-2xl font-extrabold">{myTeam.name}</p>
+            <div className="mb-2 flex justify-center">
+              <TeamIcon icon={myTeam.icon} size={48} color="#fff" />
+            </div>
+            <p className="font-display text-2xl">{myTeam.name}</p>
           </div>
           <div className="max-w-xs">
-            <p className="text-sm text-slate-400 mb-2">Your teammates</p>
+            <p className="text-sm text-white/55 mb-2">Your teammates</p>
             <div className="flex flex-wrap gap-1.5 justify-center">
               {myTeam.members.map((m) => (
                 <span key={m.id} className={`rounded-full bg-white/10 px-3 py-1 text-sm font-semibold ${!m.connected ? 'opacity-40' : ''}`}>
@@ -200,11 +206,11 @@ function StudentLobby({ state, myTeam }: { state: GameState; myTeam: GameState['
           </div>
         </>
       ) : (
-        <p className="rounded-xl bg-white/10 px-5 py-3 font-semibold text-slate-200">
+        <p className="rounded-xl bg-white/10 px-5 py-3 font-semibold text-white/80">
           Your teacher will assign you to a team.
         </p>
       )}
-      <p className="text-slate-300 animate-pulse mt-2">Waiting for the teacher to start the game…</p>
+      <p className="text-white/70 animate-pulse mt-2">Waiting for the teacher to start the game…</p>
     </div>
   );
 }
@@ -256,12 +262,12 @@ function StudentGame({ state, myTeamId, buzz, tooEarly }: {
     <div className="flex-1 flex flex-col">
       <div className="text-center mb-3 min-h-14">
         {state.question ? (
-          <p className="font-semibold text-slate-200 text-lg leading-snug line-clamp-3">
-            <span className="text-slate-400 text-sm font-bold mr-2">Q{state.currentQuestionIndex + 1}</span>
+          <p className="font-semibold text-white/80 text-lg leading-snug line-clamp-3">
+            <span className="text-white/55 text-sm font-bold mr-2">Q{state.currentQuestionIndex + 1}</span>
             {state.question.text}
           </p>
         ) : (
-          <p className="text-slate-400 font-semibold">Look at the main screen</p>
+          <p className="text-white/55 font-semibold">Look at the main screen</p>
         )}
       </div>
 
@@ -272,14 +278,16 @@ function StudentGame({ state, myTeamId, buzz, tooEarly }: {
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
           {tooEarly && (
-            <p className="rounded-full bg-incorrect px-5 py-2 font-black animate-shake">⚠️ Too Early!</p>
+            <p className="inline-flex animate-shake items-center gap-2 rounded-full bg-incorrect px-5 py-2 font-ui font-semibold">
+              <Icon name="alert" size={18} /> Too Early!
+            </p>
           )}
           {/* The big team buzzer — at least 40% of screen height */}
           <button
             onClick={buzz}
             disabled={!enabled}
             aria-label={label}
-            className={`buzzer-btn w-full max-w-md rounded-full font-black text-white text-3xl px-6 disabled:opacity-70 cursor-pointer ${
+            className={`buzzer-btn font-display w-full max-w-md cursor-pointer rounded-full px-6 text-3xl text-white disabled:opacity-70 ${
               enabled ? 'animate-buzz-ready' : ''
             }`}
             style={{
@@ -292,7 +300,7 @@ function StudentGame({ state, myTeamId, buzz, tooEarly }: {
           >
             {label}
           </button>
-          {sub && <p className="text-slate-300 font-semibold">{sub}</p>}
+          {sub && <p className="text-white/70 font-semibold">{sub}</p>}
           {isMyTeamBuzz === true && null}
         </div>
       )}
@@ -312,8 +320,10 @@ function TeamBuzzedView({ state, myTeamId, discussionLeft }: {
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
       <div className="rounded-3xl px-8 py-6 animate-pop w-full max-w-md" style={{ background: buzzTeam.color }}>
-        <p className="text-5xl mb-2">{buzzTeam.icon}</p>
-        <p className="text-2xl font-black">
+        <div className="mb-2 flex justify-center">
+          <TeamIcon icon={buzzTeam.icon} size={48} color="#fff" />
+        </div>
+        <p className="font-display text-2xl">
           {mine
             ? buzzInfo.secondChance ? 'Your Team Gets the Chance!' : 'Your Team Buzzed First!'
             : buzzInfo.secondChance ? 'The Other Team Gets the Chance' : 'The Other Team Buzzed First'}
@@ -326,14 +336,16 @@ function TeamBuzzedView({ state, myTeamId, discussionLeft }: {
       </div>
       {mine ? (
         <>
-          <p className="text-xl font-bold">🗣 Discuss with your team!</p>
-          <p className="text-slate-300">Agree on one final answer and tell your teacher.</p>
+          <p className="inline-flex items-center gap-2 text-xl font-bold">
+            <Icon name="question" size={22} /> Discuss with your team!
+          </p>
+          <p className="text-white/70">Agree on one final answer and tell your teacher.</p>
         </>
       ) : (
-        <p className="text-slate-300 font-semibold">Other team is answering — wait for the teacher…</p>
+        <p className="text-white/70 font-semibold">Other team is answering — wait for the teacher…</p>
       )}
       {discussionLeft !== null && (
-        <p className="text-6xl font-black tabular-nums" style={{ color: buzzTeam.color }}>
+        <p className="font-display text-6xl tabular-nums" style={{ color: buzzTeam.color }}>
           {Math.ceil(discussionLeft / 1000)}
         </p>
       )}
@@ -352,19 +364,25 @@ function RoundResultView({ state, myTeamId }: { state: GameState; myTeamId: Team
     <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
       {correct && resultTeam ? (
         <div className="rounded-3xl px-8 py-6 bg-correct animate-pop w-full max-w-md">
-          <p className="text-5xl mb-2">✅</p>
-          <p className="text-2xl font-black">{mine ? 'Your team got it!' : `${resultTeam.name} got it!`}</p>
+          <div className="mb-2 flex justify-center">
+            <Icon name="check" size={48} />
+          </div>
+          <p className="font-display text-2xl">{mine ? 'Your team got it!' : `${resultTeam.name} got it!`}</p>
           <p className="font-semibold opacity-90">+{q?.points} point{(q?.points ?? 1) !== 1 ? 's' : ''} for {resultTeam.name}</p>
         </div>
       ) : round.result === 'skipped' ? (
         <div className="rounded-3xl px-8 py-6 bg-waiting animate-pop w-full max-w-md">
-          <p className="text-5xl mb-2">⏭</p>
-          <p className="text-2xl font-black">Question skipped</p>
+          <div className="mb-2 flex justify-center">
+            <Icon name="skip" size={48} />
+          </div>
+          <p className="font-display text-2xl">Question skipped</p>
         </div>
       ) : (
         <div className="rounded-3xl px-8 py-6 bg-incorrect animate-pop w-full max-w-md">
-          <p className="text-5xl mb-2">❌</p>
-          <p className="text-2xl font-black">No correct answer</p>
+          <div className="mb-2 flex justify-center">
+            <Icon name="cancel" size={48} />
+          </div>
+          <p className="font-display text-2xl">No correct answer</p>
         </div>
       )}
       {round.answerRevealed && q?.correctAnswer && (
@@ -372,7 +390,7 @@ function RoundResultView({ state, myTeamId }: { state: GameState; myTeamId: Team
           Answer: <span className="text-green-400">{q.correctAnswer}</span>
         </p>
       )}
-      <p className="text-slate-300 animate-pulse">Next question coming up…</p>
+      <p className="text-white/70 animate-pulse">Next question coming up…</p>
     </div>
   );
 }
@@ -386,19 +404,21 @@ function StudentFinal({ state, myTeamId }: { state: GameState; myTeamId: TeamId 
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center gap-5 relative">
       {iWon && winner && <Confetti colors={[winner.color, '#FFD700', '#ffffff']} />}
-      <p className="text-slate-300 font-bold uppercase tracking-widest">Final Result</p>
+      <p className="text-white/70 font-bold uppercase tracking-widest">Final Result</p>
       {winner ? (
         <>
-          <p className="text-7xl animate-pop">{iWon ? '🏆' : winner.icon}</p>
-          <h2 className="text-4xl font-black animate-pop" style={{ color: winner.color }}>
+          <div className="animate-pop">
+            {iWon ? <Icon name="award" size={72} color={winner.color} /> : <TeamIcon icon={winner.icon} size={72} color={winner.color} />}
+          </div>
+          <h2 className="font-display text-4xl animate-pop" style={{ color: winner.color }}>
             {winner.name} Wins!
           </h2>
-          <p className="text-xl font-bold">{iWon ? 'Congratulations, your team won! 🎉' : 'Good game — better luck next time!'}</p>
+          <p className="text-xl font-bold">{iWon ? 'Congratulations, your team won!' : 'Good game — better luck next time!'}</p>
         </>
       ) : (
         <>
-          <p className="text-7xl animate-pop">🤝</p>
-          <h2 className="text-4xl font-black text-warning">It&apos;s a Tie!</h2>
+          <Icon name="handshake" size={72} className="animate-pop text-warning" />
+          <h2 className="font-display text-4xl text-warning">It&apos;s a Tie!</h2>
         </>
       )}
       <div className="flex items-center gap-4 mt-2">
@@ -406,9 +426,11 @@ function StudentFinal({ state, myTeamId }: { state: GameState; myTeamId: TeamId 
           const team = state.teams[teamId];
           return (
             <div key={teamId} className="rounded-2xl px-8 py-4" style={{ background: `${team.color}33`, border: `2px solid ${team.color}` }}>
-              <p className="text-2xl">{team.icon}</p>
+              <div className="mb-1 flex justify-center">
+                <TeamIcon icon={team.icon} size={28} color={team.color} />
+              </div>
               <p className="font-bold" style={{ color: team.color }}>{team.name}</p>
-              <p className="text-4xl font-black tabular-nums">{team.score}</p>
+              <p className="font-display text-4xl tabular-nums">{team.score}</p>
             </div>
           );
         })}

@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import RequireAuth from '@/components/RequireAuth';
 import { Button, Card, ConfirmDialog, ConnectionDot, ErrorBanner, useCountdown, CountdownRing, Confetti } from '@/components/ui';
+import { Icon, IconLabel, TeamIcon, TeamIconLabel } from '@/components/icons';
 import { useRoomPoll, teacherAction } from '@/lib/use-room';
 import type { GameState, Member, TeamId } from '@/lib/types';
 
@@ -45,7 +46,7 @@ function Host() {
     );
   }
   if (!state) {
-    return <div className="min-h-full flex items-center justify-center text-slate-500 font-semibold">Connecting to room…</div>;
+    return <div className="min-h-full flex items-center justify-center text-text-secondary font-semibold">Connecting to room…</div>;
   }
 
   if (state.phase === 'lobby') {
@@ -90,32 +91,34 @@ function HostLobby({ state, action, connected, error }: {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold">{state.title}</h1>
-            <p className="text-slate-500 font-medium">Game lobby · {totalConnected} student{totalConnected !== 1 ? 's' : ''} connected</p>
+            <h1 className="text-2xl md:text-3xl">{state.title}</h1>
+            <p className="text-text-secondary font-medium">Game lobby · {totalConnected} student{totalConnected !== 1 ? 's' : ''} connected</p>
           </div>
           <div className="flex items-center gap-3">
-            <ConnectionDot connected={connected} />
-            <Link href="/dashboard" className="text-slate-500 font-semibold hover:text-navy">Dashboard</Link>
+            <ConnectionDot connected={connected} light />
+            <Link href="/dashboard" className="text-text-secondary font-semibold hover:text-primary">Dashboard</Link>
           </div>
         </div>
 
         <ErrorBanner message={error} />
 
         <div className="grid lg:grid-cols-3 gap-6 mt-4">
-          <Card className="p-6 text-center">
-            <p className="font-bold text-slate-500 uppercase text-sm tracking-wide mb-2">Room code</p>
-            <p className="text-5xl font-black tracking-[0.2em] text-primary mb-4">{state.roomCode}</p>
+          <Card variant="light" className="p-6 text-center">
+            <p className="font-bold text-text-secondary uppercase text-sm tracking-wide mb-2">Room code</p>
+            <p className="font-display text-5xl tracking-[0.2em] text-primary mb-4">{state.roomCode}</p>
             <div className="flex justify-center mb-4">
               <QRCodeSVG value={joinUrl} size={160} />
             </div>
-            <p className="text-sm text-slate-500 break-all mb-3">{joinUrl}</p>
+            <p className="text-sm text-text-secondary break-all mb-3">{joinUrl}</p>
             <div className="flex gap-2 justify-center flex-wrap">
-              <Button variant="secondary" onClick={copyLink}>{copied ? '✓ Copied' : 'Copy link'}</Button>
-              <Button variant="secondary" onClick={() => window.open(`/projector/${state.roomCode}`, '_blank')}>
-                🖥️ Open projector
+              <Button variant="outline" showArrow={false} onClick={copyLink}>
+                {copied ? <IconLabel icon="check">Copied</IconLabel> : <IconLabel icon="copy">Copy link</IconLabel>}
+              </Button>
+              <Button variant="outline" showArrow={false} onClick={() => window.open(`/projector/${state.roomCode}`, '_blank')}>
+                <IconLabel icon="projector">Open projector</IconLabel>
               </Button>
             </div>
-            <label className="flex items-center justify-center gap-2 mt-4 cursor-pointer text-sm font-medium text-slate-600">
+            <label className="flex items-center justify-center gap-2 mt-4 cursor-pointer text-sm font-medium text-text-body-dark">
               <input type="checkbox" className="w-4 h-4 accent-blue-600" checked={state.roomLocked}
                 onChange={(e) => action('lock_room', { locked: e.target.checked })} />
               Lock room (block new joins)
@@ -129,16 +132,20 @@ function HostLobby({ state, action, connected, error }: {
               ))}
             </div>
 
-            <Card className="p-4">
+            <Card variant="light" className="p-4">
               <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-                <h3 className="font-bold">Unassigned students ({state.unassigned.length})</h3>
+                <h3 className="font-display text-lg">Unassigned students ({state.unassigned.length})</h3>
                 <div className="flex gap-2">
-                  <Button variant="secondary" onClick={() => action('randomize_teams')}>🎲 Randomize all</Button>
-                  <Button variant="secondary" onClick={() => action('balance_teams')}>⚖️ Auto-balance</Button>
+                  <Button variant="outline" showArrow={false} onClick={() => action('randomize_teams')}>
+                    <IconLabel icon="dice">Randomize all</IconLabel>
+                  </Button>
+                  <Button variant="outline" showArrow={false} onClick={() => action('balance_teams')}>
+                    <IconLabel icon="balance">Auto-balance</IconLabel>
+                  </Button>
                 </div>
               </div>
               {state.unassigned.length === 0 ? (
-                <p className="text-sm text-slate-400">Everyone is on a team.</p>
+                <p className="text-sm text-text-secondary">Everyone is on a team.</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {state.unassigned.map((m) => (
@@ -150,12 +157,13 @@ function HostLobby({ state, action, connected, error }: {
 
             <div className="flex items-center justify-between flex-wrap gap-3">
               {!canStart && (
-                <p className="text-sm font-medium text-warning">
-                  ⚠️ Both teams need at least one member and every connected student must be assigned.
+                <p className="inline-flex items-center gap-2 text-sm font-medium text-warning">
+                  <Icon name="alert" size={16} />
+                  Both teams need at least one member and every connected student must be assigned.
                 </p>
               )}
-              <Button className="text-xl px-10 py-4 ml-auto" disabled={!canStart} onClick={() => setConfirmStart(true)}>
-                ▶ Start Game
+              <Button className="ml-auto" showArrow={false} disabled={!canStart} onClick={() => setConfirmStart(true)}>
+                <IconLabel icon="play">Start Game</IconLabel>
               </Button>
             </div>
           </div>
@@ -198,12 +206,12 @@ function TeamPanel({ state, teamId, action }: {
         }}
       >
         <div className="flex items-center gap-2 mb-3 pb-2 border-b-4" style={{ borderColor: team.color }}>
-          <span className="text-2xl">{team.icon}</span>
-          <h3 className="font-extrabold" style={{ color: team.color }}>{team.name}</h3>
-          <span className="ml-auto text-sm font-bold text-slate-400">{team.members.length}</span>
+          <TeamIcon icon={team.icon} size={24} color={team.color} />
+          <h3 className="font-display" style={{ color: team.color }}>{team.name}</h3>
+          <span className="ml-auto text-sm font-bold text-text-secondary">{team.members.length}</span>
         </div>
         {team.members.length === 0 ? (
-          <p className="text-sm text-slate-400 py-3">Drag students here or use the buttons.</p>
+          <p className="text-sm text-text-secondary py-3">Drag students here or use the buttons.</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {team.members.map((m) => (
@@ -227,7 +235,7 @@ function StudentChip({ member, action, state, currentTeam }: {
       draggable
       onDragStart={(e) => e.dataTransfer.setData('text/participant', member.id)}
       className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold bg-white cursor-grab active:cursor-grabbing ${
-        member.connected ? 'border-slate-300 text-navy' : 'border-slate-200 text-slate-400'
+        member.connected ? 'border-primary/20 text-text-body-dark' : 'border-primary/15 text-text-secondary'
       }`}
       title={member.connected ? 'Connected' : 'Disconnected'}
     >
@@ -236,18 +244,18 @@ function StudentChip({ member, action, state, currentTeam }: {
       {currentTeam !== 'A' && (
         <button className="cursor-pointer hover:scale-110" title={`Move to ${state.teams.A.name}`}
           onClick={() => action('assign_team', { participantId: member.id, teamId: 'A' })}>
-          {state.teams.A.icon}
+          <TeamIcon icon={state.teams.A.icon} size={16} color={state.teams.A.color} />
         </button>
       )}
       {currentTeam !== 'B' && (
         <button className="cursor-pointer hover:scale-110" title={`Move to ${state.teams.B.name}`}
           onClick={() => action('assign_team', { participantId: member.id, teamId: 'B' })}>
-          {state.teams.B.icon}
+          <TeamIcon icon={state.teams.B.icon} size={16} color={state.teams.B.color} />
         </button>
       )}
-      <button className="text-slate-400 hover:text-incorrect cursor-pointer ml-0.5" title="Remove student"
+      <button className="ml-0.5 cursor-pointer text-text-secondary hover:text-incorrect" title="Remove student"
         onClick={() => action('remove_student', { participantId: member.id })}>
-        ✕
+        <Icon name="cancel" size={14} />
       </button>
     </span>
   );
@@ -269,32 +277,50 @@ function HostLive({ state, action, connected, error }: {
   const phase = state.phase;
   const q = state.question;
 
-  const phaseLabel: Record<string, string> = {
-    question_idle: '⏸ Buzzer closed',
-    question_reading: '📖 Students are reading the question',
-    buzzer_active: '🔔 BUZZER OPEN — waiting for a press',
-    team_buzzed: `🙋 ${buzzTeam?.name ?? ''} is answering`,
-    round_result: state.round?.result === 'correct' ? '✅ Correct!' : state.round?.result === 'skipped' ? '⏭ Skipped' : '❌ Round over',
-    paused: '⏸ Game paused',
-  };
+  const phaseLabel = (() => {
+    switch (phase) {
+      case 'question_idle':
+        return <IconLabel icon="pause">Buzzer closed</IconLabel>;
+      case 'question_reading':
+        return <IconLabel icon="book">Students are reading the question</IconLabel>;
+      case 'buzzer_active':
+        return <IconLabel icon="notification">BUZZER OPEN — waiting for a press</IconLabel>;
+      case 'team_buzzed':
+        return (
+          <IconLabel icon="question">
+            {buzzTeam?.name ?? 'Team'} is answering
+          </IconLabel>
+        );
+      case 'round_result':
+        if (state.round?.result === 'correct') return <IconLabel icon="check">Correct!</IconLabel>;
+        if (state.round?.result === 'skipped') return <IconLabel icon="skip">Skipped</IconLabel>;
+        return <IconLabel icon="cancel">Round over</IconLabel>;
+      case 'paused':
+        return <IconLabel icon="pause">Game paused</IconLabel>;
+      default:
+        return phase;
+    }
+  })();
 
   return (
     <div className="min-h-full bg-surface p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-extrabold">{state.title}</h1>
-            <span className="text-sm font-bold bg-slate-200 text-slate-600 rounded-full px-3 py-1">
+            <h1 className="text-xl">{state.title}</h1>
+            <span className="text-sm font-bold bg-primary/10 text-text-body-dark rounded-full px-3 py-1">
               Q {state.currentQuestionIndex + 1} / {state.totalQuestions}
             </span>
             <span className="text-sm font-mono font-bold text-primary">{state.roomCode}</span>
           </div>
           <div className="flex items-center gap-3">
-            <ConnectionDot connected={connected} />
-            <Button variant="secondary" onClick={() => window.open(`/projector/${state.roomCode}`, '_blank')}>🖥️ Projector</Button>
+            <ConnectionDot connected={connected} light />
+            <Button variant="outline" showArrow={false} onClick={() => window.open(`/projector/${state.roomCode}`, '_blank')}>
+              <IconLabel icon="projector">Projector</IconLabel>
+            </Button>
             {phase === 'paused'
-              ? <Button variant="success" onClick={() => action('resume_game')}>▶ Resume</Button>
-              : <Button variant="secondary" onClick={() => action('pause_game')}>⏸ Pause</Button>}
+              ? <Button variant="success" showArrow={false} onClick={() => action('resume_game')}><IconLabel icon="play">Resume</IconLabel></Button>
+              : <Button variant="outline" showArrow={false} onClick={() => action('pause_game')}><IconLabel icon="pause">Pause</IconLabel></Button>}
             <Button variant="danger" onClick={() => setConfirmEnd(true)}>End Game</Button>
           </div>
         </div>
@@ -303,8 +329,8 @@ function HostLive({ state, action, connected, error }: {
 
         <div className="grid lg:grid-cols-3 gap-4 mt-2">
           {/* Left: question */}
-          <Card className="p-5 lg:col-span-1">
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-2">Current question</p>
+          <Card variant="light" className="p-5 lg:col-span-1">
+            <p className="text-xs font-bold uppercase tracking-wide text-text-secondary mb-2">Current question</p>
             {q ? (
               <>
                 <p className="text-lg font-bold mb-3">{q.text}</p>
@@ -312,7 +338,7 @@ function HostLive({ state, action, connected, error }: {
                   <ul className="space-y-1.5 mb-3">
                     {q.options.map((opt, i) => (
                       <li key={i} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
-                        q.correctAnswer === opt ? 'bg-green-50 text-correct border border-green-200' : 'bg-slate-50'
+                        q.correctAnswer === opt ? 'bg-green-50 text-correct border border-green-200' : 'bg-primary/5'
                       }`}>
                         {String.fromCharCode(65 + i)}. {opt}
                       </li>
@@ -321,16 +347,16 @@ function HostLive({ state, action, connected, error }: {
                 )}
                 <div className="rounded-xl bg-green-50 border border-green-200 p-3 text-sm">
                   <span className="font-bold text-correct">Answer: </span>{q.correctAnswer || '—'}
-                  {q.explanation && <p className="text-slate-600 mt-1">{q.explanation}</p>}
+                  {q.explanation && <p className="text-text-body-dark mt-1">{q.explanation}</p>}
                 </div>
-                <p className="text-xs text-slate-400 mt-2">Worth {q.points} point{q.points !== 1 ? 's' : ''}</p>
+                <p className="text-xs text-text-secondary mt-2">Worth {q.points} point{q.points !== 1 ? 's' : ''}</p>
               </>
-            ) : <p className="text-slate-400">No question.</p>}
+            ) : <p className="text-text-secondary">No question.</p>}
           </Card>
 
           {/* Center: game state */}
-          <Card className="p-5 flex flex-col items-center justify-center text-center gap-3">
-            <p className="text-lg font-extrabold">{phaseLabel[phase] ?? phase}</p>
+          <Card variant="light" className="p-5 flex flex-col items-center justify-center text-center gap-3">
+            <p className="font-display text-lg">{phaseLabel}</p>
             {phase === 'question_reading' && readingLeft !== null && (
               <CountdownRing remainingMs={readingLeft} totalSeconds={state.settings.readingSeconds} />
             )}
@@ -339,8 +365,10 @@ function HostLive({ state, action, connected, error }: {
                 {discussionLeft !== null && (
                   <CountdownRing remainingMs={discussionLeft} totalSeconds={state.settings.discussionSeconds} color={buzzTeam?.color} />
                 )}
-                <div className="rounded-xl px-5 py-3 text-white font-bold animate-pop" style={{ background: buzzTeam?.color }}>
-                  {buzzTeam?.icon} {buzzTeam?.name}
+                <div className="animate-pop rounded-xl px-5 py-3 font-bold text-white" style={{ background: buzzTeam?.color }}>
+                  <TeamIconLabel icon={buzzTeam?.icon ?? 'star'} size={20} color="#fff">
+                    {buzzTeam?.name}
+                  </TeamIconLabel>
                   {buzz?.participantName && <p className="text-sm font-medium opacity-90">Buzzed by {buzz.participantName}
                     {buzz.responseMs != null && ` · ${(buzz.responseMs / 1000).toFixed(2)}s`}</p>}
                   {buzz?.secondChance && <p className="text-sm font-medium opacity-90">Second chance</p>}
@@ -353,34 +381,36 @@ function HostLive({ state, action, connected, error }: {
               </div>
             )}
             <div className="flex gap-2 flex-wrap justify-center mt-1">
-              {phase === 'question_idle' && <Button onClick={() => action('open_buzzer')} className="text-lg px-6">🔔 Open Buzzer</Button>}
-              {phase === 'question_reading' && <Button onClick={() => action('open_buzzer')} className="text-lg px-6">🔔 Open Buzzer Now</Button>}
-              {phase === 'buzzer_active' && <Button variant="secondary" onClick={() => action('lock_buzzer')}>🔒 Lock Buzzer</Button>}
+              {phase === 'question_idle' && <Button showArrow={false} onClick={() => action('open_buzzer')} className="px-6"><IconLabel icon="notification">Open Buzzer</IconLabel></Button>}
+              {phase === 'question_reading' && <Button showArrow={false} onClick={() => action('open_buzzer')} className="px-6"><IconLabel icon="notification">Open Buzzer Now</IconLabel></Button>}
+              {phase === 'buzzer_active' && <Button variant="outline" showArrow={false} onClick={() => action('lock_buzzer')}><IconLabel icon="lock">Lock Buzzer</IconLabel></Button>}
               {(phase === 'team_buzzed' || phase === 'buzzer_active') && (
-                <Button variant="secondary" onClick={() => action('reset_buzzer')}>↺ Reset Buzzer</Button>
+                <Button variant="outline" showArrow={false} onClick={() => action('reset_buzzer')}><IconLabel icon="refresh">Reset Buzzer</IconLabel></Button>
               )}
             </div>
           </Card>
 
           {/* Right: decisions */}
-          <Card className="p-5 space-y-2.5">
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Decisions</p>
+          <Card variant="light" className="p-5 space-y-2.5">
+            <p className="text-xs font-bold uppercase tracking-wide text-text-secondary">Decisions</p>
             <div className="grid grid-cols-2 gap-2.5">
-              <Button variant="success" className="text-lg py-3" disabled={phase !== 'team_buzzed'}
-                onClick={() => action('mark_correct')}>✓ Correct</Button>
-              <Button variant="danger" className="text-lg py-3" disabled={phase !== 'team_buzzed'}
-                onClick={() => action('mark_incorrect')}>✗ Incorrect</Button>
+              <Button variant="success" className="py-3" showArrow={false} disabled={phase !== 'team_buzzed'}
+                onClick={() => action('mark_correct')}><IconLabel icon="check">Correct</IconLabel></Button>
+              <Button variant="danger" className="py-3" showArrow={false} disabled={phase !== 'team_buzzed'}
+                onClick={() => action('mark_incorrect')}><IconLabel icon="cancel">Incorrect</IconLabel></Button>
             </div>
-            <Button variant="secondary" className="w-full" disabled={phase !== 'team_buzzed'}
-              onClick={() => action('other_team_chance')}>↔ Give Other Team a Chance</Button>
+            <Button variant="outline" showArrow={false} className="w-full" disabled={phase !== 'team_buzzed'}
+              onClick={() => action('other_team_chance')}><IconLabel icon="exchange">Give Other Team a Chance</IconLabel></Button>
             <div className="grid grid-cols-2 gap-2.5">
-              <Button variant="secondary" disabled={!q || state.round?.answerRevealed}
-                onClick={() => action('reveal_answer')}>👁 Reveal Answer</Button>
-              <Button variant="secondary" disabled={phase === 'round_result'}
-                onClick={() => action('skip_question')}>⏭ Skip</Button>
-              <Button variant="secondary" onClick={() => action('restart_question')}>↺ Restart Question</Button>
-              <Button className="font-bold" onClick={() => action('next_question')}>
-                {state.currentQuestionIndex + 1 >= state.totalQuestions ? '🏁 Finish Game' : '→ Next Question'}
+              <Button variant="outline" showArrow={false} disabled={!q || state.round?.answerRevealed}
+                onClick={() => action('reveal_answer')}><IconLabel icon="eye">Reveal Answer</IconLabel></Button>
+              <Button variant="outline" showArrow={false} disabled={phase === 'round_result'}
+                onClick={() => action('skip_question')}><IconLabel icon="skip">Skip</IconLabel></Button>
+              <Button variant="outline" showArrow={false} onClick={() => action('restart_question')}><IconLabel icon="refresh">Restart Question</IconLabel></Button>
+              <Button showArrow={false} className="font-bold" onClick={() => action('next_question')}>
+                <IconLabel icon={state.currentQuestionIndex + 1 >= state.totalQuestions ? 'award' : 'arrow-right'}>
+                  {state.currentQuestionIndex + 1 >= state.totalQuestions ? 'Finish Game' : 'Next Question'}
+                </IconLabel>
               </Button>
             </div>
           </Card>
@@ -394,31 +424,31 @@ function HostLive({ state, action, connected, error }: {
               <Card key={teamId} className="p-4 border-t-8" style={{ borderTopColor: team.color }}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-3xl">{team.icon}</span>
+                    <TeamIcon icon={team.icon} size={28} color={team.color} />
                     <div>
-                      <p className="font-extrabold" style={{ color: team.color }}>{team.name}</p>
-                      <p className="text-xs text-slate-400">{team.members.filter((m) => m.connected).length}/{team.members.length} online</p>
+                      <p className="font-display" style={{ color: team.color }}>{team.name}</p>
+                      <p className="text-xs text-text-secondary">{team.members.filter((m) => m.connected).length}/{team.members.length} online</p>
                     </div>
                   </div>
-                  <p className="text-5xl font-black tabular-nums" style={{ color: team.color }}>{team.score}</p>
+                  <p className="font-display text-5xl tabular-nums" style={{ color: team.color }}>{team.score}</p>
                 </div>
                 <div className="flex gap-2 mt-3">
-                  <Button variant="secondary" className="flex-1 !py-1.5" onClick={() => action('adjust_score', { teamId, change: 1, reason: 'Manual +1' })}>+1</Button>
-                  <Button variant="secondary" className="flex-1 !py-1.5" onClick={() => action('adjust_score', { teamId, change: -1, reason: 'Manual −1' })}>−1</Button>
+                  <Button variant="outline" showArrow={false} className="flex-1 !py-1.5" onClick={() => action('adjust_score', { teamId, change: 1, reason: 'Manual +1' })}>+1</Button>
+                  <Button variant="outline" showArrow={false} className="flex-1 !py-1.5" onClick={() => action('adjust_score', { teamId, change: -1, reason: 'Manual −1' })}>−1</Button>
                 </div>
               </Card>
             );
           })}
-          <Card className="p-4">
+          <Card variant="light" className="p-4">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Event history</p>
-              <Button variant="ghost" className="!py-1 !px-2 text-sm" disabled={!state.scoreHistory.length}
-                onClick={() => action('undo_score')}>↩ Undo last score</Button>
+              <p className="text-xs font-bold uppercase tracking-wide text-text-secondary">Event history</p>
+              <Button variant="ghost" className="!px-2 !py-1 text-sm" disabled={!state.scoreHistory.length} showArrow={false}
+                onClick={() => action('undo_score')}><IconLabel icon="undo">Undo last score</IconLabel></Button>
             </div>
             <div className="max-h-36 overflow-y-auto space-y-1 text-sm">
               {[...state.eventLog].reverse().map((event) => (
-                <p key={event.id} className="text-slate-600">
-                  <span className="text-slate-400 tabular-nums mr-2">
+                <p key={event.id} className="text-text-body-dark">
+                  <span className="text-text-secondary tabular-nums mr-2">
                     {new Date(event.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </span>
                   {event.message}
@@ -451,28 +481,35 @@ function HostEnded({ state }: { state: GameState }) {
   const colors = useMemo(() => (winner ? [winner.color, '#FFD700', '#ffffff'] : ['#2563EB', '#F97316', '#FFD700']), [winner]);
 
   return (
-    <div className="min-h-full bg-navy text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-full bg-secondary text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
       <Confetti colors={colors} />
-      <p className="text-slate-300 font-bold uppercase tracking-widest mb-3">Final Result</p>
+      <p className="text-white/70 font-bold uppercase tracking-widest mb-3">Final Result</p>
       {winner ? (
         <>
-          <div className="text-7xl mb-3 animate-pop">{winner.icon}</div>
-          <h1 className="text-5xl font-black mb-2 animate-pop" style={{ color: winner.color }}>{winner.name} wins!</h1>
+          <div className="mb-3 animate-pop">
+            <TeamIcon icon={winner.icon} size={72} color={winner.color} />
+          </div>
+          <h1 className="font-display text-5xl mb-2 animate-pop" style={{ color: winner.color }}>{winner.name} wins!</h1>
         </>
       ) : (
-        <h1 className="text-5xl font-black mb-2 animate-pop text-warning">It&apos;s a tie!</h1>
+        <h1 className="font-display mb-2 inline-flex animate-pop items-center gap-3 text-5xl text-warning">
+          <Icon name="handshake" size={40} /> It&apos;s a tie!
+        </h1>
       )}
       <div className="flex items-center gap-8 my-8">
         {(['A', 'B'] as TeamId[]).map((teamId) => {
           const team = state.teams[teamId];
           return (
             <div key={teamId} className="text-center rounded-2xl px-10 py-6" style={{ background: `${team.color}22`, border: `2px solid ${team.color}` }}>
-              <div className="text-4xl">{team.icon}</div>
+              <div className="mb-2 flex justify-center">
+                <TeamIcon icon={team.icon} size={40} color={team.color} />
+              </div>
               <p className="font-bold text-lg" style={{ color: team.color }}>{team.name}</p>
-              <p className="text-6xl font-black tabular-nums">{team.score}</p>
+              <p className="font-display text-6xl tabular-nums">{team.score}</p>
               {report && (
-                <p className="text-sm text-slate-300 mt-1">
-                  ✓ {report.teams[teamId].correct} correct · ✗ {report.teams[teamId].incorrect} incorrect
+                <p className="mt-1 inline-flex items-center gap-3 text-sm text-white/70">
+                  <span className="inline-flex items-center gap-1"><Icon name="check" size={14} /> {report.teams[teamId].correct} correct</span>
+                  <span className="inline-flex items-center gap-1"><Icon name="cancel" size={14} /> {report.teams[teamId].incorrect} incorrect</span>
                 </p>
               )}
             </div>
@@ -480,8 +517,10 @@ function HostEnded({ state }: { state: GameState }) {
         })}
       </div>
       <div className="flex gap-4">
-        <Button onClick={() => router.push(`/reports/${state.id}`)}>📊 View Full Report</Button>
-        <Button variant="secondary" onClick={() => router.push('/dashboard')}>Return to Dashboard</Button>
+        <Button showArrow={false} onClick={() => router.push(`/reports/${state.id}`)}>
+          <IconLabel icon="chart">View Full Report</IconLabel>
+        </Button>
+        <Button variant="outline" showArrow={false} onClick={() => router.push('/dashboard')}>Return to Dashboard</Button>
       </div>
     </div>
   );

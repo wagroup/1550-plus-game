@@ -53,12 +53,12 @@ export async function POST(req: NextRequest) {
         A: {
           name: (teams?.A?.name || 'Team A').trim().slice(0, 30) || 'Team A',
           color: teams?.A?.color || '#2563EB',
-          icon: teams?.A?.icon || '🐯',
+          icon: teams?.A?.icon || 'target',
         },
         B: {
           name: (teams?.B?.name || 'Team B').trim().slice(0, 30) || 'Team B',
           color: teams?.B?.color || '#F97316',
-          icon: teams?.B?.icon || '🦅',
+          icon: teams?.B?.icon || 'rocket',
         },
       },
       settings: { ...DEFAULT_SETTINGS, ...(settings || {}) },
