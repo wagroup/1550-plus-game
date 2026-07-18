@@ -5,6 +5,7 @@ import type { IconSvgElement } from '@hugeicons/react';
 import {
   Alert01Icon,
   Award01Icon,
+  Add01Icon,
   BalanceScaleIcon,
   BookOpen01Icon,
   ArrowRight01Icon,
@@ -48,6 +49,7 @@ import {
 export type IconName =
   | 'notification'
   | 'home'
+  | 'plus'
   | 'note'
   | 'game'
   | 'chart'
@@ -96,6 +98,7 @@ export type TeamIconKey =
 
 const ICONS: Record<IconName, IconSvgElement> = {
   notification: Notification01Icon,
+  plus: Add01Icon,
   home: Home01Icon,
   note: Note01Icon,
   game: GameController01Icon,

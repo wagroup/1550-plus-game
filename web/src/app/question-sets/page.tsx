@@ -60,7 +60,7 @@ function QuestionSets() {
       <ErrorBanner message={error} />
       <div className="mb-6">
         <Button
-          className="text-lg px-6 py-3"
+          showArrow={false}
           onClick={() =>
             setEditing({
               id: '',
@@ -74,16 +74,14 @@ function QuestionSets() {
             })
           }
         >
-          ➕ New Question Set
+          <Icon name="plus" size={30} /> <span>New Question Set</span>
         </Button>
       </div>
 
       {sets.length === 0 ? (
         <Card variant="light" className="p-10 text-center text-text-secondary">
-          <div className="mb-3 flex justify-center text-primary">
-            <Icon name="note" size={40} />
-          </div>
-          <p className="font-semibold">No question sets yet</p>
+          <p className="text-4xl mb-3">📝</p>
+          <p className="font-ui font-semibold text-text-body-dark">No question sets yet</p>
           <p className="text-sm">Create one to use in your games.</p>
         </Card>
       ) : (
@@ -92,7 +90,7 @@ function QuestionSets() {
             <Card variant="light" key={set.id} className="p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="font-display text-lg">{set.title}</h3>
+                  <h3 className="font-display text-lg text-text-body-dark">{set.title}</h3>
                   <p className="text-sm text-text-secondary">
                     {set.subject ? `${set.subject} · ` : ''}{set.questions.length} question{set.questions.length !== 1 ? 's' : ''}
                   </p>
@@ -194,7 +192,7 @@ function SetEditor({
 
       <div className="space-y-5">
         {questions.map((q, i) => (
-          <Card key={q.id} className="p-5">
+          <Card key={q.id} variant="light" className="p-5">
             <div className="flex items-center justify-between mb-4">
               <span className="font-bold text-text-secondary">Question {i + 1}</span>
               <div className="flex gap-1">

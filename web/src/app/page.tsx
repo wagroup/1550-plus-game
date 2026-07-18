@@ -28,7 +28,7 @@ export default function Landing() {
           </div>
           <div className="flex items-center gap-3">
             {signedIn ? (
-              <Button variant="login" onClick={() => router.push('/dashboard')}>
+              <Button variant="login" showArrow={false} onClick={() => router.push('/dashboard')}>
                 Dashboard
               </Button>
             ) : (
@@ -36,7 +36,7 @@ export default function Landing() {
                 <Link href="/login" className="hidden px-3 py-2 font-ui text-base font-medium text-white/80 hover:text-white sm:inline">
                   Login
                 </Link>
-                <Button variant="login" onClick={() => router.push('/register')}>
+                <Button variant="login" showArrow={false} onClick={() => router.push('/register')}>
                   Sign up
                 </Button>
               </>
@@ -47,7 +47,6 @@ export default function Landing() {
         <main className="container-ds pb-20 pt-8 md:pt-16">
           <section className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
             <div>
-              <p className="eyebrow mb-5 text-primary">Team A vs Team B — the whole class plays</p>
               <h1 className="font-display mb-6 text-[clamp(2.75rem,8vw,5rem)] leading-[0.95] tracking-wide text-white">
                 Turn your classroom into a <span className="text-primary">game show</span>
               </h1>
@@ -57,10 +56,10 @@ export default function Landing() {
                 teams — never to individuals.
               </p>
               <div className="flex flex-wrap gap-4">
-                <Button onClick={() => router.push(signedIn ? '/create-game' : '/register')}>
+                <Button showArrow={false} onClick={() => router.push(signedIn ? '/create-game' : '/register')}>
                   Create a game room
                 </Button>
-                <Button variant="secondary" onClick={() => router.push('/login')}>
+                <Button variant="secondary" showArrow={false} onClick={() => router.push('/login')}>
                   Teacher login
                 </Button>
               </div>
@@ -84,7 +83,7 @@ export default function Landing() {
                   onChange={(e) => setCode(e.target.value.toUpperCase())}
                   aria-label="Room code"
                 />
-                <Button type="submit" variant="login" className="shrink-0 px-8">
+                <Button type="submit" variant="login" showArrow={false} className="shrink-0 px-8">
                   Join
                 </Button>
               </form>

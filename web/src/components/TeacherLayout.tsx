@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Icon, type IconName } from './icons';
-import { Logo, Button } from './ui';
+import { Logo, Button, SurfaceProvider } from './ui';
 import { api, clearSession, getStoredTeacher } from '@/lib/client-api';
 
 const navItems: { to: string; label: string; icon: IconName }[] = [
@@ -53,7 +53,7 @@ export default function TeacherLayout({ children, title }: { children: React.Rea
         </nav>
         <div className="border-t border-white/10 pt-4">
           <p className="mb-3 truncate font-ui text-sm text-white/55">{teacher?.name}</p>
-          <Button variant="ghost" className="w-full justify-start" onClick={logout}>
+          <Button variant="muted" compact showArrow={false} className="w-full justify-start" onClick={logout}>
             Sign out
           </Button>
         </div>
@@ -70,12 +70,14 @@ export default function TeacherLayout({ children, title }: { children: React.Rea
             ))}
           </div>
         </header>
-        <main className="section-light min-h-full p-6 md:p-10">
-          <div className="mx-auto max-w-6xl">
-            <h1 className="font-display mb-8 text-[clamp(1.75rem,4vw,2.5rem)] text-text-body-dark">{title}</h1>
-            {children}
-          </div>
-        </main>
+        <SurfaceProvider value="light">
+          <main className="section-light min-h-full p-6 md:p-10">
+            <div className="mx-auto max-w-6xl">
+              <h1 className="font-display mb-8 text-[clamp(1.75rem,4vw,2.5rem)] text-text-body-dark">{title}</h1>
+              {children}
+            </div>
+          </main>
+        </SurfaceProvider>
       </div>
     </div>
   );

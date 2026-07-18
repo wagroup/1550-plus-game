@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import RequireAuth from '@/components/RequireAuth';
-import { Button, Card, ConfirmDialog, ConnectionDot, ErrorBanner, useCountdown, CountdownRing, Confetti } from '@/components/ui';
+import { Button, Card, ConfirmDialog, ConnectionDot, ErrorBanner, SurfaceProvider, useCountdown, CountdownRing, Confetti } from '@/components/ui';
 import { Icon, IconLabel, TeamIcon, TeamIconLabel } from '@/components/icons';
 import { useRoomPoll, teacherAction } from '@/lib/use-room';
 import type { GameState, Member, TeamId } from '@/lib/types';
@@ -87,7 +87,8 @@ function HostLobby({ state, action, connected, error }: {
   }
 
   return (
-    <div className="min-h-full bg-surface p-4 md:p-8">
+    <SurfaceProvider value="light">
+    <div className="surface-light min-h-full p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div>
@@ -179,6 +180,7 @@ function HostLobby({ state, action, connected, error }: {
         onCancel={() => setConfirmStart(false)}
       />
     </div>
+    </SurfaceProvider>
   );
 }
 
@@ -303,7 +305,8 @@ function HostLive({ state, action, connected, error }: {
   })();
 
   return (
-    <div className="min-h-full bg-surface p-4 md:p-6">
+    <SurfaceProvider value="light">
+    <div className="surface-light min-h-full p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">
@@ -433,8 +436,8 @@ function HostLive({ state, action, connected, error }: {
                   <p className="font-display text-5xl tabular-nums" style={{ color: team.color }}>{team.score}</p>
                 </div>
                 <div className="flex gap-2 mt-3">
-                  <Button variant="outline" showArrow={false} className="flex-1 !py-1.5" onClick={() => action('adjust_score', { teamId, change: 1, reason: 'Manual +1' })}>+1</Button>
-                  <Button variant="outline" showArrow={false} className="flex-1 !py-1.5" onClick={() => action('adjust_score', { teamId, change: -1, reason: 'Manual −1' })}>−1</Button>
+                  <Button compact showArrow={false} className="flex-1" onClick={() => action('adjust_score', { teamId, change: 1, reason: 'Manual +1' })}>+1</Button>
+                  <Button compact showArrow={false} className="flex-1" onClick={() => action('adjust_score', { teamId, change: -1, reason: 'Manual −1' })}>−1</Button>
                 </div>
               </Card>
             );
@@ -442,7 +445,7 @@ function HostLive({ state, action, connected, error }: {
           <Card variant="light" className="p-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-bold uppercase tracking-wide text-text-secondary">Event history</p>
-              <Button variant="ghost" className="!px-2 !py-1 text-sm" disabled={!state.scoreHistory.length} showArrow={false}
+              <Button compact showArrow={false} disabled={!state.scoreHistory.length}
                 onClick={() => action('undo_score')}><IconLabel icon="undo">Undo last score</IconLabel></Button>
             </div>
             <div className="max-h-36 overflow-y-auto space-y-1 text-sm">
@@ -469,6 +472,7 @@ function HostLive({ state, action, connected, error }: {
         onCancel={() => setConfirmEnd(false)}
       />
     </div>
+    </SurfaceProvider>
   );
 }
 

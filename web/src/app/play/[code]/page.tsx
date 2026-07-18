@@ -104,18 +104,6 @@ export default function PlayPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomCode, session?.sessionToken]);
 
-  // Keyboard shortcut (space / enter) for accessibility.
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.code === 'Space' || e.code === 'Enter') && state?.phase === 'buzzer_active') {
-        e.preventDefault();
-        buzz();
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [state?.phase, buzz]);
-
   if (fatal || (error && !state)) {
     return (
       <div className="min-h-full bg-secondary text-white flex flex-col items-center justify-center gap-5 p-6 text-center">
@@ -223,6 +211,7 @@ function StudentGame({ state, myTeamId, buzz, tooEarly }: {
 }) {
   const readingLeft = useCountdown(state.readingEndsAt, state.serverNow);
   const discussionLeft = useCountdown(state.discussionEndsAt, state.serverNow);
+  const [pressed, setPressed] = useState(false);
   const phase = state.phase;
   const round = state.round;
   const buzzInfo = round?.buzz || null;
@@ -233,7 +222,7 @@ function StudentGame({ state, myTeamId, buzz, tooEarly }: {
   // Buzzer button config by phase
   let label = 'Wait for the Question';
   let enabled = false;
-  let bg = '#64748B';
+  let color = '#64748B';
   let sub: string | null = null;
 
   if (phase === 'question_reading') {
@@ -242,21 +231,46 @@ function StudentGame({ state, myTeamId, buzz, tooEarly }: {
   } else if (phase === 'question_idle') {
     label = 'Get Ready';
     sub = 'The teacher will open the buzzer';
-    bg = '#F59E0B';
+    color = '#F59E0B';
   } else if (phase === 'buzzer_active') {
     if (myTeamLocked) {
       label = 'Buzzer Locked';
       sub = 'The other team gets this chance';
     } else {
-      label = 'BUZZ FOR YOUR TEAM';
+      label = 'Buzz!';
       enabled = true;
-      bg = myTeam?.color || '#2563EB';
+      color = myTeam?.color || '#DC2626';
       sub = round?.lockedTeams.length ? 'Second chance!' : null;
     }
   } else if (phase === 'team_buzzed') {
-    bg = buzzInfo ? state.teams[buzzInfo.teamId].color : bg;
+    color = buzzInfo ? state.teams[buzzInfo.teamId].color : color;
     label = 'Buzzer Locked';
   }
+
+  const triggerBuzz = useCallback(() => {
+    if (!enabled) return;
+    setPressed(true);
+    buzz();
+    window.setTimeout(() => setPressed(false), 140);
+  }, [enabled, buzz]);
+
+  useEffect(() => {
+    if (!enabled) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code !== 'Space' || e.repeat) return;
+      e.preventDefault();
+      triggerBuzz();
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') setPressed(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+    };
+  }, [enabled, triggerBuzz]);
 
   return (
     <div className="flex-1 flex flex-col">
@@ -282,24 +296,28 @@ function StudentGame({ state, myTeamId, buzz, tooEarly }: {
               <Icon name="alert" size={18} /> Too Early!
             </p>
           )}
-          {/* The big team buzzer — at least 40% of screen height */}
-          <button
-            onClick={buzz}
-            disabled={!enabled}
-            aria-label={label}
-            className={`buzzer-btn font-display w-full max-w-md cursor-pointer rounded-full px-6 text-3xl text-white disabled:opacity-70 ${
-              enabled ? 'animate-buzz-ready' : ''
-            }`}
-            style={{
-              background: bg,
-              height: 'min(58vh, 100vw - 3rem)',
-              maxHeight: '460px',
-              minHeight: '260px',
-              boxShadow: enabled ? `0 12px 0 rgba(0,0,0,0.35)` : 'none',
-            }}
-          >
-            {label}
-          </button>
+          <div className="buzzer-unit">
+            <div className="buzzer-base">
+              <button
+                type="button"
+                onClick={triggerBuzz}
+                disabled={!enabled}
+                aria-label={enabled ? 'Buzz for your team. Press space on keyboard.' : label}
+                className={`buzzer-dome ${enabled ? 'buzzer-dome--ready' : ''} ${pressed ? 'is-pressed' : ''}`}
+                style={{
+                  ['--buzzer-color' as string]: color,
+                  ['--buzzer-shadow' as string]: `color-mix(in srgb, ${color} 55%, black)`,
+                }}
+              >
+                <span className="buzzer-label">{label}</span>
+              </button>
+            </div>
+            {enabled && (
+              <p className="buzzer-hint">
+                Tap the dome or press <kbd>Space</kbd>
+              </p>
+            )}
+          </div>
           {sub && <p className="text-white/70 font-semibold">{sub}</p>}
           {isMyTeamBuzz === true && null}
         </div>

@@ -1,8 +1,21 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { Icon } from './icons';
+
+type Surface = 'dark' | 'light';
+
+const SurfaceContext = createContext<Surface>('dark');
+
+export function SurfaceProvider({ value, children }: { value: Surface; children: React.ReactNode }) {
+  return <SurfaceContext.Provider value={value}>{children}</SurfaceContext.Provider>;
+}
+
+export function useSurface(): Surface {
+  return useContext(SurfaceContext);
+}
 
 function ArrowIcon({ className = '' }: { className?: string }) {
   return (
@@ -18,65 +31,104 @@ function ArrowIcon({ className = '' }: { className?: string }) {
   );
 }
 
-export function Logo({ size = 'md', light = true }: { size?: 'sm' | 'md' | 'lg'; light?: boolean }) {
-  const textSize = size === 'lg' ? 'text-4xl' : size === 'sm' ? 'text-xl' : 'text-2xl';
+const LOGO_HEIGHT: Record<'sm' | 'md' | 'lg', string> = {
+  sm: 'h-8',
+  md: 'h-10',
+  lg: 'h-14',
+};
+
+export function Logo({ size = 'md', light: _light = true }: { size?: 'sm' | 'md' | 'lg'; light?: boolean }) {
   return (
-    <Link
-      href="/"
-      className={`font-display tracking-wide ${textSize} ${light ? 'text-white' : 'text-text-body-dark'}`}
-    >
-      Class<span className="text-primary">Buzz</span>
-      <Icon name="notification" size={size === 'lg' ? 36 : size === 'sm' ? 20 : 28} className="ml-1 inline-block align-middle text-primary" />
+    <Link href="/" className="inline-flex shrink-0 items-center">
+      <Image
+        src="/assets/logo.png"
+        alt="1550+"
+        width={500}
+        height={265}
+        className={`${LOGO_HEIGHT[size]} w-auto`}
+        priority={size === 'lg'}
+      />
     </Link>
   );
 }
 
+const PRIMARY_TONE: Record<string, string> = {
+  primary: '',
+  login: '',
+  secondary: '',
+  outline: '',
+  ghost: '',
+  danger: 'btn-primary--danger',
+  success: 'btn-primary--success',
+};
+
+const MINIMAL_TONE: Record<string, string> = {
+  primary: 'btn-minimal--primary',
+  login: 'btn-minimal--primary',
+  secondary: '',
+  outline: '',
+  ghost: '',
+  danger: 'btn-minimal--danger',
+  success: 'btn-minimal--success',
+};
+
 export function Button({
   children,
   variant = 'primary',
-  showArrow = false,
+  showArrow,
+  compact = false,
+  prominent = false,
   className = '',
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'login' | 'secondary' | 'outline' | 'danger' | 'success' | 'ghost';
+  variant?: 'primary' | 'login' | 'secondary' | 'outline' | 'danger' | 'success' | 'ghost' | 'muted';
   showArrow?: boolean;
+  compact?: boolean;
+  /** Force the large marketing pill (legacy) */
+  prominent?: boolean;
 }) {
-  const base =
-    'inline-flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer';
+  const surface = useSurface();
+  const isCompact = compact || variant === 'ghost' || variant === 'muted';
+  const useMinimal = !prominent;
 
-  if (variant === 'primary') {
-    const withArrow = showArrow !== false;
+  if (variant === 'muted') {
     return (
-      <button className={`btn-primary ${className}`} {...props}>
-        <span className="relative z-10 flex items-center gap-3">
-          {children}
-          {withArrow && <ArrowIcon />}
-        </span>
+      <button
+        className={`btn-minimal btn-minimal--dark ${isCompact ? 'btn-minimal--compact' : ''} ${className}`}
+        {...props}
+      >
+        <span className="relative z-10 flex items-center gap-2">{children}</span>
       </button>
     );
   }
 
-  if (variant === 'login') {
+  if (useMinimal) {
+    const onDark = surface === 'dark';
+    const tone = MINIMAL_TONE[variant] ?? '';
+    const onDarkSecondary =
+      onDark && ['secondary', 'outline', 'ghost'].includes(variant) ? 'btn-minimal--on-dark' : '';
     return (
-      <button className={`btn-login ${className}`} {...props}>
-        {children}
+      <button
+        className={`btn-minimal ${tone} ${onDarkSecondary} ${isCompact ? 'btn-minimal--compact' : ''} ${className}`}
+        {...props}
+      >
+        <span className="relative z-10 flex items-center gap-2">{children}</span>
       </button>
     );
   }
 
-  const styles: Record<string, string> = {
-    secondary:
-      'rounded-full border border-white/15 bg-white/5 px-5 py-2.5 font-ui text-sm font-medium text-white hover:bg-white/10',
-    outline:
-      'rounded-full border border-primary/30 bg-white px-5 py-2.5 font-ui text-sm font-medium text-text-body-dark hover:border-primary hover:bg-primary/5',
-    danger: 'rounded-md bg-incorrect px-4 py-2.5 font-ui text-sm font-semibold text-white hover:brightness-110',
-    success: 'rounded-md bg-correct px-4 py-2.5 font-ui text-sm font-semibold text-white hover:brightness-110',
-    ghost: 'rounded-md bg-transparent px-4 py-2.5 font-ui text-sm font-medium text-white/70 hover:bg-white/8 hover:text-white',
-  };
+  const withArrow = showArrow ?? (variant === 'primary' && !isCompact);
+  const tone = PRIMARY_TONE[variant] ?? '';
 
   return (
-    <button className={`${base} ${styles[variant]} ${className}`} {...props}>
-      {children}
+    <button
+      className={`btn-primary ${tone} ${isCompact ? 'btn-primary--compact' : ''} ${className}`}
+      {...props}
+    >
+      <span className="relative z-10 flex items-center gap-3">
+        {children}
+        {withArrow && <ArrowIcon />}
+      </span>
     </button>
   );
 }
@@ -114,10 +166,11 @@ export function Field({
   children: React.ReactNode;
   light?: boolean;
 }) {
+  const onLight = light ?? useSurface() === 'light';
   return (
     <label className="block">
       <span
-        className={`mb-1.5 block text-sm font-medium ${light ? 'text-text-body-dark' : 'text-white/80'}`}
+        className={`mb-1.5 block text-sm font-medium ${onLight ? 'text-text-body-dark' : 'text-white/80'}`}
       >
         {label}
       </span>
@@ -131,10 +184,15 @@ export const inputClass = 'input-ds';
 export const inputClassLight = 'input-ds-light';
 
 export function ErrorBanner({ message }: { message: string | null }) {
+  const onLight = useSurface() === 'light';
   if (!message) return null;
   return (
     <div
-      className="animate-pop rounded-xl border border-incorrect/40 bg-incorrect/15 px-4 py-3 text-sm font-medium text-red-200"
+      className={`animate-pop rounded-xl px-4 py-3 text-sm font-medium ${
+        onLight
+          ? 'border border-incorrect/30 bg-red-50 text-red-700'
+          : 'border border-incorrect/40 bg-incorrect/15 text-red-200'
+      }`}
       role="alert"
     >
       {message}
